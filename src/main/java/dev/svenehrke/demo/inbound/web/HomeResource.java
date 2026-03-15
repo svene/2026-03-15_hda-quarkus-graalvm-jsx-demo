@@ -1,4 +1,4 @@
-package dev.svenehrke.demo.ssfepatterns;
+package dev.svenehrke.demo.inbound.web;
 
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
