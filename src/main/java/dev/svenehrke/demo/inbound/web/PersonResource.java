@@ -1,5 +1,6 @@
 package dev.svenehrke.demo.inbound.web;
 
+import dev.svenehrke.demo.inbound.web.infra.js.JsxRenderer;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
@@ -14,6 +15,9 @@ public class PersonResource {
 	@Inject
 	Template home; // matches home.html
 
+	@Inject
+	JsxRenderer renderer;
+
 	@GET
 	@Path("/home")
 	public TemplateInstance home() {
@@ -25,6 +29,9 @@ public class PersonResource {
 	@Path("/page")
 	@Produces(MediaType.TEXT_HTML)
 	public String page() {
+//		return renderer.render("renderPage", vm);
+		return renderer.render("renderHello", null);
+/*
 		return """
             <html>
               <head>
@@ -35,5 +42,6 @@ public class PersonResource {
               </body>
             </html>
             """;
+*/
 	}
 }
