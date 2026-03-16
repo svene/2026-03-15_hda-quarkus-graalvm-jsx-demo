@@ -1,0 +1,16 @@
+{
+  "name": "frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npx esbuild src/main/java/dev/svenehrke/demo/inbound/web/render.tsx --bundle --platform=neutral --format=cjs --outfile=target/classes/static/js/ssr.js",
+    "watch": "bun watch.ts"
+  },
+  "dependencies": {
+    "hono": "^4.11.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.9",
+    "ts-morph": "^27.0.2"
+  }
+}
