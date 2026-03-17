@@ -3,6 +3,7 @@ package dev.svenehrke.demo.inbound.web.infra.js;
 import dev.svenehrke.demo.core.config.AppConfig;
 import dev.svenehrke.demo.core.config.DevConfig;
 import dev.svenehrke.demo.core.config.QuarkusProfile;
+import io.quarkus.runtime.Startup;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
@@ -12,35 +13,32 @@ import java.nio.file.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import io.quarkus.arc.profile.IfBuildProfile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @IfBuildProfile("dev")
+@Startup
 public class JsBundleWatcher {
-
-	@Inject
-	QuarkusProfile profile;
 
 	@Inject
 	DevConfig devConfig;
 
-    private final JsxRenderer jsxRenderer;
+	@Inject
+	JsHolder jsHolder;
+
+	private final Logger log = LoggerFactory.getLogger(JsBundleWatcher.class);
 
 	private WatchService watchService;
 	private Thread watchThread;
 
-    public JsBundleWatcher(JsxRenderer jsxRenderer) {
-        this.jsxRenderer = jsxRenderer;
-	}
-
 	@PostConstruct
 	public void start() throws IOException {
-
-		if (!profile.isDev()) {
-			return;
-		}
+		log.info("Starting JsBundleWatcher");
 
 		Path file = Path.of(devConfig.ssr().filename());
 		Path dir = file.getParent();
+		log.info("dir: {}", dir.toString());
 
 		watchService = FileSystems.getDefault().newWatchService();
 
@@ -67,8 +65,11 @@ public class JsBundleWatcher {
 			}
 			for (WatchEvent<?> event : key.pollEvents()) {
 				Path changed = (Path) event.context();
-				if (changed.equals(fileName)) {
-                    jsxRenderer.reloadBundle();
+				if (changed.equals(fileName.getFileName())) {
+					log.info("calling initpool");
+					jsHolder.initPool();
+				} else {
+					log.info("NOT calling initpool");
 				}
 			}
 			key.reset();

@@ -1,5 +1,6 @@
 package dev.svenehrke.demo.inbound.web.infra.js;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,22 +8,19 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
 
-public class JsContextPool {
+public class SimplePool<T> {
 
-	private final Logger log = LoggerFactory.getLogger(JsContextPool.class);
-	private final BlockingQueue<JsInitializer> pool;
-	private final Supplier<JsInitializer> factory;
+	private final Logger log = LoggerFactory.getLogger(SimplePool.class);
+	private final BlockingQueue<T> pool;
+	private final Supplier<T> factory;
     private final int size;
+    private boolean initialized = false;
 
-    public JsContextPool(int size, Supplier<JsInitializer> factory) {
+    public SimplePool(int size, Supplier<T> factory) {
         this.size = size;
 		this.factory = factory;
         pool = new ArrayBlockingQueue<>(size);
     }
-
-    public void init() {
-		fillPool();
-	}
 
     private void fillPool() {
 		log.info("filling pool");
@@ -31,21 +29,29 @@ public class JsContextPool {
 		}
 	}
 
-	public JsInitializer borrow() throws InterruptedException {
+	public T borrow() throws InterruptedException {
+		if (!initialized) {
+			fillPool();
+			initialized = true;
+		}
 		return pool.take();
 	}
 
-	public void release(JsInitializer ctx) {
-		pool.offer(ctx);
+	public boolean release(T item) {
+		return pool.offer(item);
 	}
 
-    /**
+/*
+    */
+/**
      * Rebuilds all contexts in the pool.
      * Used when the JS bundle changes in development.
-     */
+     *//*
+
     public synchronized void reset() {
 		log.info("resetting pool");
         pool.clear();
         fillPool();
     }
+*/
 }
