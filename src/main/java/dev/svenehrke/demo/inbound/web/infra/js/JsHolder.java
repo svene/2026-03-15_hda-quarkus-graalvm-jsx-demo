@@ -55,7 +55,7 @@ public class JsHolder {
 	 */
 	public synchronized Source buildSource() {
 		try {
-			log.info("Reloading JS-Code");
+			log.info("Reloading JS-Code '{}'", appConfig.ssr().resource());
 			InputStream is = getClass().getClassLoader().getResourceAsStream(appConfig.ssr().resource());
 			String code = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 			return Source.newBuilder("js", code, appConfig.ssr().resource()).build();

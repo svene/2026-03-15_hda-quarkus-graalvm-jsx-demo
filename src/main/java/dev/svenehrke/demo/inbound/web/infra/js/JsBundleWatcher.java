@@ -2,22 +2,22 @@ package dev.svenehrke.demo.inbound.web.infra.js;
 
 import dev.svenehrke.demo.core.config.DevConfig;
 import io.quarkus.runtime.Startup;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-
-import java.io.IOException;
-import java.nio.file.*;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import io.quarkus.arc.profile.IfBuildProfile;
+import io.quarkus.scheduler.Scheduled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @ApplicationScoped
 @IfBuildProfile("dev")
 @Startup
 public class JsBundleWatcher {
+
+	private static final Logger log = LoggerFactory.getLogger(JsBundleWatcher.class);
 
 	@Inject
 	DevConfig devConfig;
@@ -25,62 +25,22 @@ public class JsBundleWatcher {
 	@Inject
 	JsHolder jsHolder;
 
-	private final Logger log = LoggerFactory.getLogger(JsBundleWatcher.class);
+	private long lastModified = -1;
 
-	private WatchService watchService;
-	private Thread watchThread;
-
-	@PostConstruct
-	public void start() throws IOException {
-		log.info("Starting JsBundleWatcher");
-
+	@Scheduled(every = "1s")
+	void checkFile() throws Exception {
 		Path file = Path.of(devConfig.ssr().filename());
-		Path dir = file.getParent();
-		log.info("dir: {}", dir.toString());
 
-		watchService = FileSystems.getDefault().newWatchService();
-
-		dir.register(
-			watchService,
-			StandardWatchEventKinds.ENTRY_MODIFY,
-			StandardWatchEventKinds.ENTRY_CREATE
-		);
-
-		watchThread = new Thread(this::watchLoop, "js-bundle-watcher");
-		watchThread.setDaemon(true);
-		watchThread.start();
-	}
-
-	private void watchLoop() {
-		Path fileName = Path.of(devConfig.ssr().filename());
-		while (!Thread.currentThread().isInterrupted()) {
-			WatchKey key;
-			try {
-				key = watchService.take();
-			}
-			catch (InterruptedException e) {
-				return;
-			}
-			for (WatchEvent<?> event : key.pollEvents()) {
-				Path changed = (Path) event.context();
-				if (changed.equals(fileName.getFileName())) {
-					log.info("calling initpool");
-					jsHolder.initPool();
-				} else {
-					log.info("NOT calling initpool");
-				}
-			}
-			key.reset();
+		if (!Files.exists(file)) {
+			return;
 		}
-	}
 
-	@PreDestroy
-	public void stop() throws IOException {
-		if (watchService != null) {
-			watchService.close();
-		}
-		if (watchThread != null) {
-			watchThread.interrupt();
+		long current = Files.getLastModifiedTime(file).toMillis();
+
+		if (current != lastModified) {
+			lastModified = current;
+			log.info("SSR bundle changed → reloading");
+			jsHolder.initPool();
 		}
 	}
 }
