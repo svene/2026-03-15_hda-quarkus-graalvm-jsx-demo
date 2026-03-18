@@ -1,8 +1,6 @@
 package dev.svenehrke.demo.inbound.web.infra.js;
 
-import dev.svenehrke.demo.core.config.AppConfig;
 import dev.svenehrke.demo.core.config.DevConfig;
-import dev.svenehrke.demo.core.config.QuarkusProfile;
 import io.quarkus.runtime.Startup;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;

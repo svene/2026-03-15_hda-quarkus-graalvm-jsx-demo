@@ -5,28 +5,13 @@ import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Supplier;
-
 @ApplicationScoped
 public class JsxRenderer {
 
-	@Inject
-	JsHolder jsHolder;
-
-	@Inject
-	JsBundleWatcher watcher;
-
 	private final Logger log = LoggerFactory.getLogger(JsxRenderer.class);
 
-	//	private final Supplier<SimplePool<JsConnection>> jsConnectionPoolSupplier;
-
-/*
-	public JsxRenderer(
-		Supplier<SimplePool<JsConnection>> jsConnectionPoolSupplier
-	) {
-		this.jsConnectionPoolSupplier = jsConnectionPoolSupplier;
-	}
-*/
+	@Inject
+	JsHolder jsHolder;
 
 	public String render(String entryFunctionName, Object vm) {
 		JsConnection ctx = null;

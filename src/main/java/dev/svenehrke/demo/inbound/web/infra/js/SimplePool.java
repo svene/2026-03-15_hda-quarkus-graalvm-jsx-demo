@@ -1,6 +1,5 @@
 package dev.svenehrke.demo.inbound.web.infra.js;
 
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,17 +40,4 @@ public class SimplePool<T> {
 		return pool.offer(item);
 	}
 
-/*
-    */
-/**
-     * Rebuilds all contexts in the pool.
-     * Used when the JS bundle changes in development.
-     *//*
-
-    public synchronized void reset() {
-		log.info("resetting pool");
-        pool.clear();
-        fillPool();
-    }
-*/
 }

@@ -29,19 +29,6 @@ public class PersonResource {
 	@Path("/page")
 	@Produces(MediaType.TEXT_HTML)
 	public String page() {
-//		return renderer.render("renderPage", vm);
 		return renderer.render("renderHello", null);
-/*
-		return """
-            <html>
-              <head>
-                <title>Hello</title>
-              </head>
-              <body>
-                <h1>Hello from Quarkus</h1>
-              </body>
-            </html>
-            """;
-*/
 	}
 }
