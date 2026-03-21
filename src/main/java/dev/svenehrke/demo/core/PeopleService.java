@@ -1,0 +1,56 @@
+package dev.svenehrke.demo.core;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import org.svenehrke.demo.inbound.web.PersonDetailModel;
+import org.svenehrke.demo.inbound.web.PersonEditModel;
+import org.svenehrke.demo.inbound.web.PersonTableModel;
+import org.svenehrke.demo.inbound.web.PersonTableRowModel;
+
+import java.util.List;
+
+@ApplicationScoped
+public class PeopleService {
+
+	private final PeopleRepository peopleRepository;
+
+	public PeopleService(PeopleRepository peopleRepository) {
+		this.peopleRepository = peopleRepository;
+	}
+
+	// Read-only methods
+	public PersonTableModel personTableModel() {
+		return peopleRepository.people();
+	}
+
+	public PersonTableModel peopleForSearch(String search) {
+		return search != null && !search.isBlank() ? peopleRepository.peopleForSearch(search) : peopleRepository.people();
+	}
+
+	public int total() {
+		return peopleRepository.total();
+	}
+
+	public PersonTableRowModel personTableRowModel(int id) {
+		return peopleRepository.personTableRowModel(id);
+	}
+
+	public PersonEditModel personEditModel(int id) {
+		return peopleRepository.personEditModel(id);
+	}
+
+	public PersonDetailModel personDetailModel(int id) {
+		return peopleRepository.personDetailModel(id);
+	}
+
+	// Write methods
+	@Transactional
+	public int deleteByIds(List<Integer> ids) {
+		return peopleRepository.deleteByIds(ids);
+	}
+
+	@Transactional
+	public int updatePerson(int id, PersonEditModel personEditModel) {
+		return peopleRepository.updatePerson(id, personEditModel);
+	}
+}
