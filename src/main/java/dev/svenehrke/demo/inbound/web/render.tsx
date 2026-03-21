@@ -1,7 +1,5 @@
 import { renderToString } from 'hono/jsx/dom/server';
 import {Hello} from "./hello";
-/*
-import {PersonDetailModel, PersonEditModel, PersonPageModel, PersonTableModel, PersonTableRowModel} from "./vm/person-page-model-vm";
 import {Page} from "./personpage";
 import {PersonDetails} from "./persondetails";
 import {PersonRow} from "./personrow";
@@ -9,12 +7,10 @@ import {PersonEditor} from "./personedit";
 import {PersondetailsCard} from "./persondetailscard";
 import {PersondetailsRow} from "./persondetailrow";
 import {PersonTable} from "./persontable";
-*/
 
 export function renderHello(vmJson: string): string {
 	return renderToString(<Hello/>)
 }
-/*
 export function renderPage(vmJson: string): string {
 	const vm = JSON.parse(vmJson);
 	return renderToString(<Page vm={vm} />)
@@ -43,4 +39,3 @@ export function personTable(vmJson: string): string {
 	const vm = JSON.parse(vmJson);
 	return renderToString(<PersonTable vm={vm} />)
 }
-*/

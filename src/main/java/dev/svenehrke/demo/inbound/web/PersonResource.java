@@ -8,6 +8,11 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import org.svenehrke.demo.inbound.web.PersonPageModel;
+import org.svenehrke.demo.inbound.web.PersonTableModel;
+import org.svenehrke.demo.inbound.web.PersonTableRowModel;
+
+import java.util.List;
 
 @Path("/")
 public class PersonResource {
@@ -25,10 +30,20 @@ public class PersonResource {
 			.data("name", "Quarkus User")
 			.data("items", java.util.List.of("Apple", "Banana", "Carrot"));
 	}
+
 	@GET
 	@Path("/page")
 	@Produces(MediaType.TEXT_HTML)
 	public String page() {
-		return renderer.render("renderHello", null);
+		var vm = new PersonPageModel(
+			new PersonTableModel(List.of(
+				new PersonTableRowModel(
+					1, "Sven", "Ehrke", "some street 5"
+				)
+			),
+				1
+			)
+		);
+		return renderer.render("renderPage", vm);
 	}
 }
