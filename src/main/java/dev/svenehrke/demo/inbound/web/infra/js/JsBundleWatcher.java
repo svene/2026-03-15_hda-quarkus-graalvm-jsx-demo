@@ -26,7 +26,7 @@ public class JsBundleWatcher {
 	JsHolder jsHolder;
 
 	@Inject
-	DevReloadRoute reload;
+	DevReloadSSE reload;
 
 	private long lastModified = -1;
 
