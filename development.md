@@ -42,3 +42,20 @@ public String page() {
 - Usually this means for each endpoint in the Controller there will be a
 corresponding function in `render.tsx`
 
+### Live reload for the browser
+During development the browser should automatically refresh when one of the tsx files is changed.
+
+This is achieved by using a SSE connection (see `DevReloadSSE.java`) which will
+be triggerd by `JsBundleWatcher` whenever the `ssr.js` changed.
+
+`layout.tsx` with `dev.js` then listens to these SSE events:
+````js
+new EventSource("/dev-reload")
+  .addEventListener("reload", () => {
+    console.log("Reload triggered");
+    location.reload();
+    }
+  );
+````
+
+
