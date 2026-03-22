@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@ApplicationScoped
 @IfBuildProfile("dev")
+@ApplicationScoped
 @Startup
 public class JsBundleWatcher {
 
@@ -24,6 +24,9 @@ public class JsBundleWatcher {
 
 	@Inject
 	JsHolder jsHolder;
+
+	@Inject
+	DevReloadRoute reload;
 
 	private long lastModified = -1;
 
@@ -41,6 +44,7 @@ public class JsBundleWatcher {
 			lastModified = current;
 			log.info("SSR bundle changed → reloading");
 			jsHolder.initPool();
+			reload.broadcastReload(); // notify browser about ssr.js change
 		}
 	}
 }
