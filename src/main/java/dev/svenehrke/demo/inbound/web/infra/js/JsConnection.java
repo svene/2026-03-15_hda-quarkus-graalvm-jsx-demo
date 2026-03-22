@@ -11,15 +11,8 @@ import java.util.Map;
 public class JsConnection {
 
     private final Map<String, Value> entryFunctions = new HashMap<>();
-	private final Engine engine;
 
 	public JsConnection(Engine engine, Source source) {
-		this.engine = engine;
-		init(source);
-	}
-
-	private void init(Source source) {
-		entryFunctions.clear();
 		Context ctx = Context.newBuilder("js")
 			.engine(engine)
 			.allowAllAccess(true)
