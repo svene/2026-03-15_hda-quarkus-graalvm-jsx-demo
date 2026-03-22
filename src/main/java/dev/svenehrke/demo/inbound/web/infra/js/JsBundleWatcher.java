@@ -23,10 +23,7 @@ public class JsBundleWatcher {
 	DevConfig devConfig;
 
 	@Inject
-	JsHolder jsHolder;
-
-	@Inject
-	DevReloadSSE reload;
+	JsBundleChangeHandler jsBundleChangeHandler;
 
 	private long lastModified = -1;
 
@@ -42,9 +39,8 @@ public class JsBundleWatcher {
 
 		if (current != lastModified) {
 			lastModified = current;
-			log.info("SSR bundle changed → reloading");
-			jsHolder.initPool();
-			reload.broadcastReload(); // notify browser about ssr.js change
+			log.info("SSR bundle changed → notifying handler");
+			jsBundleChangeHandler.run();
 		}
 	}
 }
