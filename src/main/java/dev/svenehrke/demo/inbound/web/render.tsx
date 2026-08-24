@@ -6,9 +6,9 @@ import {PersonEditor} from "./personedit";
 import {PersondetailsCard} from "./persondetailscard";
 import {PersondetailsRow} from "./persondetailrow";
 import {PersonTable} from "./persontable";
-import {PersonRouteName} from "./generated/types/vm-types";
+import {JTSPersonRouteName} from "./generated/types/vm-types";
 
-export function render(route: PersonRouteName, vmJson: string): string {
+export function render(route: JTSPersonRouteName, vmJson: string): string {
 	const vm = JSON.parse(vmJson);
 	switch (route) {
 		case 'page':

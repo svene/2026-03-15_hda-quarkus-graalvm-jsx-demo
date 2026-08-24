@@ -1,6 +1,6 @@
 package dev.svenehrke.demo.inbound.web.infra.js;
 
-import dev.svenehrke.demo.inbound.web.PersonRouteName;
+import dev.svenehrke.demo.inbound.web.JTSPersonRouteName;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
@@ -14,7 +14,7 @@ public class JsxRenderer {
 	@Inject
 	JsHolder jsHolder;
 
-	public String render(PersonRouteName route, Object vm) {
+	public String render(JTSPersonRouteName route, Object vm) {
 		log.info("rendering {}", route);
 		JsConnection ctx = null;
 		try {

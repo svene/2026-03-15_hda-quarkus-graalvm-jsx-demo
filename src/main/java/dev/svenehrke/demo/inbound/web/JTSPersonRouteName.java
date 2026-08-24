@@ -1,6 +1,7 @@
 package dev.svenehrke.demo.inbound.web;
 
-public enum PersonRouteName {
+/** JTS: Java-TS */
+public enum JTSPersonRouteName {
 	page,
 	personDetails,
 	personRow,

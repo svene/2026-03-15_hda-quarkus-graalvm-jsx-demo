@@ -1,6 +1,6 @@
 import {Layout} from "./layout";
 import {PersonPageModel} from "./generated/types/vm-types";
-import {HonoWebApiConsts} from "./hono-web-api-shared-consts";
+import {personTableUrl} from "./route-builder";
 import {PersonTable} from "./persontable";
 
 export const Page = ({vm}: {vm: PersonPageModel}) => (
@@ -8,7 +8,7 @@ export const Page = ({vm}: {vm: PersonPageModel}) => (
 		<div class="container mt-1">
 
 			<div class="p-1 mt-1 area-border" style="min-height: 500px">
-				<div class="field">
+				<div class="field" data-testid="search-field">
 					<label class="label">Search</label>
 					<div class="control">
 						<input
@@ -17,7 +17,7 @@ export const Page = ({vm}: {vm: PersonPageModel}) => (
 							name="search"
 							placeholder="Search for firstname or lastname"
 							hx-trigger="input changed delay:500ms"
-							hx-get={HonoWebApiConsts.PERSON_TABLE}
+							hx-get={personTableUrl()}
 							hx-target="#result-table"
 						/>
 					</div>

@@ -10,6 +10,6 @@ public class RootResource {
 
 	@GET
 	public Response redirect() {
-		return Response.seeOther(URI.create("/page")).build();
+		return Response.seeOther(URI.create("/uiroute/" + JTSPersonRouteName.page.name())).build();
 	}
 }
