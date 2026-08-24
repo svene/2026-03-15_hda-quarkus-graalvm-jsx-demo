@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "genjava": "npx bun javagen/generate-java-from-hono.ts",
     "build": "npx esbuild src/main/java/dev/svenehrke/demo/inbound/web/render.tsx --bundle --platform=neutral --format=cjs --outfile=target/classes/static/js/ssr.js",
     "watch": "npx bun watch.ts"
   },
@@ -11,7 +10,6 @@
     "hono": "^4.11.3"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.9",
-    "ts-morph": "^27.0.2"
+    "@types/bun": "^1.3.9"
   }
 }

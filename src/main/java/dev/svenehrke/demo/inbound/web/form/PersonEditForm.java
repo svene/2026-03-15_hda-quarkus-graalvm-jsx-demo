@@ -1,7 +1,7 @@
 package dev.svenehrke.demo.inbound.web.form;
 
 import jakarta.ws.rs.FormParam;
-import org.svenehrke.demo.inbound.web.PersonEditModel;
+import dev.svenehrke.demo.inbound.web.PersonEditModel;
 
 public class PersonEditForm {
 

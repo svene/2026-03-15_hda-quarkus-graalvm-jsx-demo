@@ -1,5 +1,5 @@
 import {Layout} from "./layout";
-import {PersonPageModel} from "./vm/person-page-model-vm";
+import {PersonPageModel} from "./generated/types/vm-types";
 import {HonoWebApiConsts} from "./hono-web-api-shared-consts";
 import {PersonTable} from "./persontable";
 

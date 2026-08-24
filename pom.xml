@@ -131,6 +131,35 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>cz.habarta.typescript-generator</groupId>
+                <artifactId>typescript-generator-maven-plugin</artifactId>
+                <version>4.1.1</version>
+                <executions>
+                    <execution>
+                        <id>generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jsonLibrary>jackson2</jsonLibrary>
+                    <classPatterns>
+                        <pattern>dev.svenehrke.demo.inbound.**.*Model</pattern>
+                        <pattern>dev.svenehrke.demo.inbound.**.*VM</pattern>
+                    </classPatterns>
+                    <classes>
+                        <class>dev.svenehrke.demo.inbound.web.PersonRouteName</class>
+                    </classes>
+                    <outputFile>${project.basedir}/src/main/java/dev/svenehrke/demo/inbound/web/generated/types/vm-types.d.ts</outputFile>
+                    <outputFileType>declarationFile</outputFileType>
+                    <outputKind>module</outputKind>
+                    <mapClasses>asInterfaces</mapClasses>
+                    <mapEnum>asUnion</mapEnum>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire-plugin.version}</version>
                 <executions>

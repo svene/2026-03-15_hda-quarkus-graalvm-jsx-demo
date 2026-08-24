@@ -1,4 +1,4 @@
-import {PersonDetailModel} from "./vm/person-page-model-vm";
+import {PersonDetailModel} from "./generated/types/vm-types";
 import {EvtBackendEvents} from "./hono-web-api-shared-consts";
 import {detailsRowUrl, rowUrl} from "./route-builder";
 

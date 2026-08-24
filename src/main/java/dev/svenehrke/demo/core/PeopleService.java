@@ -2,10 +2,10 @@ package dev.svenehrke.demo.core;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import org.svenehrke.demo.inbound.web.PersonDetailModel;
-import org.svenehrke.demo.inbound.web.PersonEditModel;
-import org.svenehrke.demo.inbound.web.PersonTableModel;
-import org.svenehrke.demo.inbound.web.PersonTableRowModel;
+import dev.svenehrke.demo.inbound.web.PersonDetailModel;
+import dev.svenehrke.demo.inbound.web.PersonEditModel;
+import dev.svenehrke.demo.inbound.web.PersonTableModel;
+import dev.svenehrke.demo.inbound.web.PersonTableRowModel;
 
 import java.util.List;
 

@@ -1,10 +1,12 @@
 package dev.svenehrke.demo.inbound.web.infra.js;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@IfBuildProfile("dev")
 @ApplicationScoped
 public class JsBundleChangeHandler implements Runnable {
 

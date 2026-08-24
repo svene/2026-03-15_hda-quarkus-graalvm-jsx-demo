@@ -5,10 +5,6 @@ import dev.svenehrke.demo.inbound.web.*;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.svenehrke.demo.inbound.web.PersonDetailModel;
-import org.svenehrke.demo.inbound.web.PersonEditModel;
-import org.svenehrke.demo.inbound.web.PersonTableModel;
-import org.svenehrke.demo.inbound.web.PersonTableRowModel;
 
 import javax.sql.DataSource;
 import java.sql.*;

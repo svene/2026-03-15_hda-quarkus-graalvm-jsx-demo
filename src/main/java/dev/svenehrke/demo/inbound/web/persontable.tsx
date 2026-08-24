@@ -1,5 +1,5 @@
 import {HonoWebApiConsts} from "./hono-web-api-shared-consts";
-import {PersonTableModel} from "./vm/person-page-model-vm";
+import {PersonTableModel} from "./generated/types/vm-types";
 import {PersonRow} from "./personrow";
 
 export const PersonTable = ({vm}: { vm: PersonTableModel }) => (

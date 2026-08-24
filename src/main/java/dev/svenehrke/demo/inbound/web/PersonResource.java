@@ -7,7 +7,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.svenehrke.demo.inbound.web.*;
 
 import java.util.List;
 
@@ -25,7 +24,7 @@ public class PersonResource {
 	@Produces(MediaType.TEXT_HTML)
 	public String page() {
 		var vm = new PersonPageModel(peopleService.personTableModel());
-		return renderer.render("page", vm);
+		return renderer.render(PersonRouteName.page, vm);
 	}
 
 	@GET
@@ -33,7 +32,7 @@ public class PersonResource {
 	@Produces(MediaType.TEXT_HTML)
 	public String details(@PathParam("id") int id) {
 		PersonDetailModel vm = peopleService.personDetailModel(id);
-		return renderer.render("personDetails", vm);
+		return renderer.render(PersonRouteName.personDetails, vm);
 	}
 
 	@GET
@@ -41,7 +40,7 @@ public class PersonResource {
 	@Produces(MediaType.TEXT_HTML)
 	public String row(@PathParam("id") int id) {
 		PersonTableRowModel vm = peopleService.personTableRowModel(id);
-		return renderer.render("personRow", vm);
+		return renderer.render(PersonRouteName.personRow, vm);
 	}
 
 	@GET
@@ -49,7 +48,7 @@ public class PersonResource {
 	@Produces(MediaType.TEXT_HTML)
 	public String edit(@PathParam("id") int id) {
 		PersonEditModel vm = peopleService.personEditModel(id);
-		return renderer.render("personEdit", vm);
+		return renderer.render(PersonRouteName.personEdit, vm);
 	}
 
 	@GET
@@ -57,7 +56,7 @@ public class PersonResource {
 	@Produces(MediaType.TEXT_HTML)
 	public String detailsCard(@PathParam("id") int id) {
 		PersonDetailModel vm = peopleService.personDetailModel(id);
-		return renderer.render("personDetailsCard", vm);
+		return renderer.render(PersonRouteName.personDetailsCard, vm);
 	}
 
 	@PUT
@@ -80,7 +79,7 @@ public class PersonResource {
 	@Produces(MediaType.TEXT_HTML)
 	public String detailsRow(@PathParam("id") int id) {
 		PersonDetailModel vm = peopleService.personDetailModel(id);
-		return renderer.render("personDetailsRow", vm);
+		return renderer.render(PersonRouteName.personDetailsRow, vm);
 	}
 
 	@GET
@@ -88,7 +87,7 @@ public class PersonResource {
 	@Produces(MediaType.TEXT_HTML)
 	public String peopleUrl(@QueryParam("search") String search) {
 		PersonTableModel vm = peopleService.peopleForSearch(search);
-		return renderer.render("personTable", vm);
+		return renderer.render(PersonRouteName.personTable, vm);
 	}
 	@DELETE
 	@Path(HonoWebApiSharedConsts.HonoWebApiConsts.DELETE)

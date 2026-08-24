@@ -46,3 +46,4 @@ nb-configuration.xml
 
 # Custom
 /node_modules/
+/src/main/java/dev/svenehrke/demo/inbound/web/generated/

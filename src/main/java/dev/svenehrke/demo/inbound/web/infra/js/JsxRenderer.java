@@ -1,5 +1,6 @@
 package dev.svenehrke.demo.inbound.web.infra.js;
 
+import dev.svenehrke.demo.inbound.web.PersonRouteName;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
@@ -13,13 +14,13 @@ public class JsxRenderer {
 	@Inject
 	JsHolder jsHolder;
 
-	public String render(String route, Object vm) {
+	public String render(PersonRouteName route, Object vm) {
 		log.info("rendering {}", route);
 		JsConnection ctx = null;
 		try {
 			String vmJson = JsonUtil.toJson(vm);
 			ctx = jsHolder.jsConnectionPoolSupplier().get().borrow();
-			var result = ctx.getEntryFunction("render").execute(route, vmJson);
+			var result = ctx.getEntryFunction("render").execute(route.name(), vmJson);
 			return result.asString();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();

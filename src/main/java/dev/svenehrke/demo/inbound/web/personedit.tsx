@@ -1,4 +1,4 @@
-import {PersonEditModel} from "./vm/person-page-model-vm";
+import {PersonEditModel} from "./generated/types/vm-types";
 import {detailsCardUrl, updateUrl} from "./route-builder";
 import {EvtBackendEvents} from "./hono-web-api-shared-consts";
 
