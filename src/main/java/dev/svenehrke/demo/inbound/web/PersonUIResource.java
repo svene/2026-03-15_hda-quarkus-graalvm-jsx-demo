@@ -14,8 +14,9 @@ import jakarta.ws.rs.core.MediaType;
 /**
  * Component URLs — a separate concept from the REST-ish mutation endpoints in
  * {@link PersonActionResource}. Every GET route that renders a JSX fragment is
- * dispatched through this single "/uiroute/{name}" endpoint, keyed by
- * {@link JTSPersonRouteName}, instead of getting its own {@code @Path}.
+ * keyed by {@link JTSPersonRouteName}; most are dispatched through the generic
+ * "/uiroute/{name}" endpoint, while routes needing parameters beyond
+ * {@code id} get their own dedicated {@code @Path} method (e.g. {@link #personTable}).
  */
 @Path("/uiroute")
 public class PersonUIResource {
@@ -26,10 +27,16 @@ public class PersonUIResource {
 	@Inject
 	PeopleService peopleService;
 
+	/**
+	 * Handles every uiroute whose vm only ever depends on an (optional) {@code id}. A route
+	 * needing different or additional parameters — like {@link #personTable} below — gets its
+	 * own dedicated {@code @Path} method instead of growing this method's signature; JAX-RS
+	 * matches the literal path first, so the two coexist without ambiguity.
+	 */
 	@GET
 	@Path("/{name}")
 	@Produces(MediaType.TEXT_HTML)
-	public String uiroute(@PathParam("name") String name, @QueryParam("id") Integer id, @QueryParam("search") String search) {
+	public String uiroute(@PathParam("name") String name, @QueryParam("id") Integer id) {
 		JTSPersonRouteName route;
 		try {
 			route = JTSPersonRouteName.valueOf(name);
@@ -39,10 +46,17 @@ public class PersonUIResource {
 		Object vm = switch (route) {
 			case page -> new PersonPageModel(peopleService.personTableModel());
 			case personDetails, personDetailsCard, personDetailsRow -> peopleService.personDetailModel(id);
-			case personTable -> peopleService.peopleForSearch(search);
 			case personRow -> peopleService.personTableRowModel(id);
 			case personEdit -> peopleService.personEditModel(id);
+			default -> throw new IllegalStateException(route + " is served by its own dedicated endpoint, not " + getClass().getSimpleName() + "#uiroute");
 		};
 		return renderer.render(route, vm);
+	}
+
+	@GET
+	@Path("/personTable")
+	@Produces(MediaType.TEXT_HTML)
+	public String personTable(@QueryParam("search") String search) {
+		return renderer.render(JTSPersonRouteName.personTable, peopleService.peopleForSearch(search));
 	}
 }

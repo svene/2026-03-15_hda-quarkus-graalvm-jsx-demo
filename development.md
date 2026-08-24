@@ -41,11 +41,24 @@ currently this is WIP. More notes written down than real documentation
 
 ### Component URLs (uiroute) vs REST-ish mutation endpoints
 
-- Every GET route that renders a JSX fragment (`page`, `personDetails`, `personRow`, `personEdit`,
-  `personDetailsCard`, `personDetailsRow`, `personTable`) is dispatched through a single endpoint,
-  `PersonUIResource.uiroute()` at `@Path("/uiroute/{name}")`, keyed by `JTSPersonRouteName` — instead of
-  each one getting its own `@Path`. `id` and `search` are passed as query params
+- Every GET route that renders a JSX fragment and only ever needs an (optional) `id` — `page`,
+  `personDetails`, `personRow`, `personEdit`, `personDetailsCard`, `personDetailsRow` — is dispatched
+  through a single endpoint, `PersonUIResource.uiroute()` at `@Path("/uiroute/{name}")`, keyed by
+  `JTSPersonRouteName`, instead of each one getting its own `@Path`. `id` is passed as a query param
   (`/uiroute/personDetails?id=5`). An unknown `name` returns 404.
+- A route needing different or additional parameters doesn't grow `uiroute()`'s signature — it gets its
+  own dedicated `@Path` method instead. `personTable` is the current example: it needs `search`, not `id`,
+  so it has its own `PersonUIResource.personTable()` at `@Path("/personTable")`. JAX-RS matches the literal
+  `/uiroute/personTable` path before falling back to the `/uiroute/{name}` template, so the two coexist
+  without ambiguity. Both still call `renderer.render(JTSPersonRouteName.xxx, vm)`, so nothing on the
+  frontend (`routes.tsx`) needs to change when a route moves from the generic dispatcher to its own method.
+  - `uiroute()`'s switch only lists the routes it actually serves, falling back to `default -> throw new
+    IllegalStateException(...)` for anything else. This means moving a route out to its own endpoint is
+    just deleting its case — no dead branch has to be added or maintained for it. The tradeoff: the
+    compiler no longer forces every `JTSPersonRouteName` value to be handled somewhere in this switch, so
+    a route that's added to the enum but never wired into `uiroute()` or given its own endpoint fails at
+    request time (`IllegalStateException`), not at build time — the same runtime-checked risk this file
+    already documents for `render.tsx`'s route lookup and for an unknown `name` in the URL.
 - These are deliberately treated as a separate concept from REST resources — they're URLs for fetching a
   rendered UI component, not for a domain resource. `routes.tsx`'s `personRoutes` map builds them
   (`personRoutes.personDetails.url(id)`, `personRoutes.personEdit.url(id)`, `personRoutes.personTable.url()`,
