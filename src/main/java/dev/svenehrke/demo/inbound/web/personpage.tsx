@@ -1,6 +1,6 @@
 import {Layout} from "./layout";
 import {PersonPageModel} from "./generated/types/vm-types";
-import {personTableUrl} from "./route-builder";
+import {personRoutes} from "./routes";
 import {PersonTable} from "./persontable";
 
 export const Page = ({vm}: {vm: PersonPageModel}) => (
@@ -17,7 +17,7 @@ export const Page = ({vm}: {vm: PersonPageModel}) => (
 							name="search"
 							placeholder="Search for firstname or lastname"
 							hx-trigger="input changed delay:500ms"
-							hx-get={personTableUrl()}
+							hx-get={personRoutes.personTable.url()}
 							hx-target="#result-table"
 						/>
 					</div>

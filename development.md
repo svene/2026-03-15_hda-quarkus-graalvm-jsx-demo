@@ -23,14 +23,14 @@ currently this is WIP. More notes written down than real documentation
   component/uiroute name — see "Component URLs (uiroute)" below):
   `export type JTSPersonRouteName = "page" | "personDetails" | ...`.
   - `JTSPersonRouteName` is the single source of truth for the route-name strings that connect
-    `PersonUIResource.java` (`renderer.render(JTSPersonRouteName.personDetails, vm)`) to `render.tsx`'s
-    `switch (route)` dispatch, and to `route-builder.ts`'s `/uiroute/{name}` URL builders — a typo or a
-    route removed on the Java side is caught by TypeScript instead of silently falling through to the
-    `default` "ROUTE NOT FOUND" case at runtime.
+    `PersonUIResource.java` (`renderer.render(JTSPersonRouteName.personDetails, vm)`) to `routes.tsx`'s
+    `personRoutes` map (see "Component URLs (uiroute)" below) — a typo or a route removed on the Java
+    side is caught by TypeScript instead of silently falling through to a "ROUTE NOT FOUND" fallback at
+    runtime.
 - `HonoWebApiSharedConsts.java` (currently just `PERSON` and `DELETE` — the two REST-ish mutation
   endpoints in `PersonActionResource.java`) is a hand-written Java source file, kept in sync by hand with
   `hono-web-api-shared-consts.ts`, which is the source of truth for the same two constants on the
-  **frontend** side (`route-builder.ts`'s `updateUrl`, `persontable.tsx`'s delete form).
+  **frontend** side (`routes.tsx`'s `personActionUrls`).
   - It can't be generated from Java the same way `JTSPersonRouteName` is: `HonoWebApiConsts`'s values
     (URL path templates) are consumed as actual runtime string values on the TS side, and
     typescript-generator's `declarationFile` output only produces types with no runtime representation —
@@ -47,12 +47,15 @@ currently this is WIP. More notes written down than real documentation
   each one getting its own `@Path`. `id` and `search` are passed as query params
   (`/uiroute/personDetails?id=5`). An unknown `name` returns 404.
 - These are deliberately treated as a separate concept from REST resources — they're URLs for fetching a
-  rendered UI component, not for a domain resource. `route-builder.ts` builds them
-  (`detailsUrl(id)`, `editUrl(id)`, `personTableUrl()`, ...) from `JTSPersonRouteName` values.
+  rendered UI component, not for a domain resource. `routes.tsx`'s `personRoutes` map builds them
+  (`personRoutes.personDetails.url(id)`, `personRoutes.personEdit.url(id)`, `personRoutes.personTable.url()`,
+  ...) from `JTSPersonRouteName` values, and pairs each URL with the JSX render function for that route —
+  see "Generate JS from JSX for GraalVM" below.
 - Mutations (`PUT /person/{id}` to save an edit, `DELETE /delete` for bulk delete) stay on their own
   REST-ish paths in a separate class, `PersonActionResource.java` — they don't go through `/uiroute`.
-  `route-builder.ts`'s `updateUrl(id)` builds the `PUT` URL from `HonoWebApiConsts.PERSON` directly;
-  `persontable.tsx` uses `HonoWebApiConsts.DELETE` directly for the bulk-delete form.
+  `routes.tsx`'s `personActionUrls.updatePerson.url(id)` builds the `PUT` URL from
+  `HonoWebApiConsts.PERSON`; `personActionUrls.delete.url()` builds the `DELETE` URL from
+  `HonoWebApiConsts.DELETE`.
 - `RootResource` (`GET /`) redirects to `/uiroute/page`.
 
 ### Generate JS from JSX for GraalVM
@@ -61,37 +64,35 @@ currently this is WIP. More notes written down than real documentation
 - ... which runs:\
 `esbuild src/main/java/dev/svenehrke/demo/inbound/web/render.tsx --bundle --platform=neutral --format=cjs --outfile=target/classes/static/js/ssr.js`
 - This means a single JS file (`ssr.js`) is generated from the JSX/TS files to be used from Java via GraalVM.
-- `render.tsx` exports a single `render(route, vmJson)` function that dispatches on `route` (typed as the
-  generated `JTSPersonRouteName` union) to the right JSX component.
-- Example:
+- `render.tsx` exports a single `render(route, vmJson)` entry function, but it doesn't dispatch itself —
+  it looks `route` up in `routes.tsx`'s `personRoutes` map and calls that entry's `render(vm)`:
 ````JS
 import { renderToString } from 'hono/jsx/dom/server';
-import {JTSPersonRouteName} from "./generated/types/vm-types";
+import {personRoutes} from "./routes";
+import {RouteDefinition} from "./route-types";
 
-export function render(route: JTSPersonRouteName, vmJson: string): string {
-  const vm = JSON.parse(vmJson);
-  switch (route) {
-    case 'page':
-      return renderToString(<Page vm={vm} />)
-    // ... one case per JTSPersonRouteName value
+export function render(route: string, vmJson: string): string {
+  const routeDefinitions: Record<string, RouteDefinition> = personRoutes;
+  const routeDefinition = routeDefinitions[route];
+  if (routeDefinition) {
+    const vm = JSON.parse(vmJson);
+    return routeDefinition.render(vm);
+  } else {
+    return renderToString(<div>{`ROUTE '${route}' NOT FOUND`}</div>)
   }
 }
 ````
-
-````Java
-@GET
-@Path("/{name}") // under @Path("/uiroute") — see "Component URLs (uiroute)" above
-@Produces(MediaType.TEXT_HTML)
-public String uiroute(@PathParam("name") String name, @QueryParam("id") Integer id, @QueryParam("search") String search) {
-  JTSPersonRouteName route = JTSPersonRouteName.valueOf(name);
-  Object vm = switch (route) {
-    case page -> new PersonPageModel(peopleService.personTableModel());
-    // ... one case per JTSPersonRouteName value
-  };
-  return renderer.render(route, vm);
-}
-````
-- `render.tsx` needs to provide a `case` for every `JTSPersonRouteName` value used from `PersonUIResource.java`.
+- `routes.tsx`'s `personRoutes` is typed as `satisfies Record<JTSPersonRouteName, RouteDefinition>` — every
+  value of the generated `JTSPersonRouteName` union must have a `{url, render}` entry, or the file fails
+  to typecheck. This is what actually guarantees every route has both a URL builder and a render
+  function — but only if something actually typechecks `routes.tsx`: `npm run build` (esbuild) does
+  **not**, it only strips types and bundles, so a missing entry currently only gets caught by your
+  editor's TS language server, not by the build. `render.tsx`'s lookup-and-fallback is a runtime safety
+  net for a route name that somehow reaches it without going through `PersonUIResource.uiroute()`'s own
+  `JTSPersonRouteName.valueOf(name)` validation (which already 404s on an unknown name before `render()`
+  is ever called).
+- Adding a new route means: add the `JTSPersonRouteName` enum value, add its `case` in
+  `PersonUIResource.uiroute()`'s Java `switch`, and add its entry to `personRoutes` in `routes.tsx`.
 
 ### Live reload for the browser
 During development the browser should automatically refresh when one of the tsx files is changed.

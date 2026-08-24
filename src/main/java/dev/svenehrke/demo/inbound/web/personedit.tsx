@@ -1,5 +1,5 @@
 import {PersonEditModel} from "./generated/types/vm-types";
-import {detailsCardUrl, updateUrl} from "./route-builder";
+import {personActionUrls, personRoutes} from "./routes";
 import {EvtBackendEvents} from "./hono-web-api-shared-consts";
 
 export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
@@ -10,7 +10,7 @@ export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
 			`}
 			hx-target="closest tr"
 			hx-swap="outerHTML"
-			hx-get={detailsCardUrl(vm.id)}
+			hx-get={personRoutes.personDetailsCard.url(vm.id)}
 		></template>
 		<template
 			hx-trigger={`
@@ -18,7 +18,7 @@ export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
 			`}
 			hx-target="closest tr"
 			hx-swap="outerHTML"
-			hx-get={detailsCardUrl(vm.id)}
+			hx-get={personRoutes.personDetailsCard.url(vm.id)}
 		></template>
 		<td colSpan={4} style="padding: 0px">
 			<div class="card p-5 my-2">
@@ -61,7 +61,7 @@ export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
 							type="submit"
 							class="level-item button is-primary"
 							hx-trigger="click consume"
-							hx-put={updateUrl(vm.id)} /* Expects backend to respond with 'person-updated'(id) event */
+							hx-put={personActionUrls.updatePerson.url(vm.id)} /* Expects backend to respond with 'person-updated'(id) event */
 							hx-swap="none" /* Works with event handling of 'person-updated' */
 						>Save
 						</button>

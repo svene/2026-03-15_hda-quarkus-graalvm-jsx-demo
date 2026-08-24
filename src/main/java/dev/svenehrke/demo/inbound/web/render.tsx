@@ -1,31 +1,15 @@
 import { renderToString } from 'hono/jsx/dom/server';
-import {Page} from "./personpage";
-import {PersonDetails} from "./persondetails";
-import {PersonRow} from "./personrow";
-import {PersonEditor} from "./personedit";
-import {PersondetailsCard} from "./persondetailscard";
-import {PersondetailsRow} from "./persondetailrow";
-import {PersonTable} from "./persontable";
-import {JTSPersonRouteName} from "./generated/types/vm-types";
+import {personRoutes} from "./routes";
+import {RouteDefinition} from "./route-types";
 
-export function render(route: JTSPersonRouteName, vmJson: string): string {
-	const vm = JSON.parse(vmJson);
-	switch (route) {
-		case 'page':
-			return renderToString(<Page vm={vm} />)
-		case 'personDetails':
-			return renderToString(<PersonDetails vm={vm} />)
-		case 'personRow':
-			return renderToString(<PersonRow vm={vm}/>)
-		case 'personEdit':
-			return renderToString(<PersonEditor vm={vm}/>)
-		case 'personDetailsCard':
-			return renderToString(<PersondetailsCard vm={vm}/>)
-		case 'personDetailsRow':
-			return renderToString(<PersondetailsRow vm={vm} />)
-		case 'personTable':
-			return renderToString(<PersonTable vm={vm} />)
-		default:
-			return renderToString(<div>{`ROUTE '${route}' NOT FOUND`}</div>)
+export function render(route: string, vmJson: string): string {
+	const routeDefinitions: Record<string, RouteDefinition> = personRoutes;
+
+	const routeDefinition = routeDefinitions[route];
+	if (routeDefinition) {
+		const vm = JSON.parse(vmJson);
+		return routeDefinition.render(vm);
+	} else {
+		return renderToString(<div>{`ROUTE '${route}' NOT FOUND`}</div>)
 	}
 }
