@@ -29,6 +29,7 @@ nesting `${Child(vm)}`, lists `${xs.map(x => Row(x))}`, `String(...)` once at th
 | `hello.ts` (SB) — unused demo `Hello` component | delete | **Done** — `git rm`'d from SB. |
 | SB filename `personDetailsCard.ts` (caps outlier vs siblings) | lowercase like siblings | **Done** — `git mv`'d to `persondetailscard.ts` (matches Q + its 6 siblings); the two `"./personDetailsCard"` import specifiers updated. |
 | Q's `NotFoundException` vs SB's `render(PersonRow, null)` fallback for unknown route | Q is correct; SB has a `// TODO: return 404` hack | **Done** — SB `PersonUIController` now `throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown uiroute: " + name)` for an unknown route name, matching Q's `NotFoundException`. |
+| SB's `ssr.js` was web-served (esbuild wrote it under `target/classes/static/js/` → reachable at `/js/ssr.js`) | move the SSR bundle out of every Spring static-locations prefix | **Done** — SB esbuild now writes `target/classes/graaljs/ssr.js`; `app.ssr.resource=classpath:/graaljs/ssr.js`; devtools exclude `graaljs/**`; `Dockerfile` / `development.md` / `architecture.md` paths updated. Verified against the packaged jar: `/uiroute/Page` 200, `/graaljs/ssr.js` **404**, `/js/ssr.js` **404**, `/static/js/ssr.js` **404**; browser libs (`/js/htmx.org/...`) still 200. Q was already classpath-only (`META-INF/resources/`), unchanged. |
 
 Both projects' Playwright suites: **13/13 green** after all of the above.
 
@@ -104,9 +105,6 @@ Same guarantee; SB's named alias is marginally more readable. Cosmetic.
 
 ---
 
-## Still open (see the deferred rows in the status table above)
+## Still open
 
-- **SB serves `ssr.js`** — SB's `src/main/resources/static/` is web-served, so `/js/ssr.js` is
-  publicly reachable. Move the SSR bundle out of `static/`, or exclude it. Q is fine (classpath-only).
-- Whether PascalCase route names should stay in the URL path (`/uiroute/PersonDetails`) or be
-  lowercased in the URL builder only.
+Nothing — all rows in the status table above are **Done**.
