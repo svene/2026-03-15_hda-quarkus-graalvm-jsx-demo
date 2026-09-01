@@ -4,13 +4,11 @@
 - **SB** = `2026-03-09_hda-springboot-graalvm-jsx-demo`
 
 The two projects demonstrate the same hono/html + GraalVM SSR pattern on two stacks. Their web
-layers have been converged; what's left is below.
+layers have been converged.
 
 ## Still to sync
 
-| Item | Q | SB | Note |
-|---|---|---|---|
-| SB `architecture.md` | (no equivalent doc) | stale — predates the convergence (`generate-java-from-hono.ts`, `RouteBuilder`, "Java records generated from TypeScript", `generated-sources/tsjava`) | Update it to match reality, or delete it. |
+Nothing. Each repo has a current `architecture.md` (they share structure; the prose is per-stack).
 
 ## Deliberate — do not align
 
