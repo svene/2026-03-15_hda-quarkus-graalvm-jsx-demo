@@ -24,9 +24,10 @@ const nameIdUrl = (name: JTSPersonRouteName, id: number) => // Java-HONO
  * The route-name strings are checked against JTSPersonRouteName, a union the
  * typescript-generator Maven plugin generates from the Java JTSPersonRouteName
  * enum into generated/types/vm-types.d.ts — the Java enum is the source of
- * truth, and `satisfies Record<JTSPersonRouteName, RouteDefinition>` makes a
- * missing or misspelled entry a TS error.
+ * truth, and `satisfies PersonRoutesMap` makes a missing or misspelled entry a
+ * TS error.
  */
+type PersonRoutesMap = Record<JTSPersonRouteName, RouteDefinition>;
 export const personRoutes = {
 	Page: { // Java-HONO
 		url: () => nameUrl('Page'),
@@ -56,7 +57,7 @@ export const personRoutes = {
 		url: (id: number) => nameIdUrl('PersonDetailsRow', id),
 		render: (vm: any) => PersonDetailsRow(vm),
 	},
-} satisfies Record<JTSPersonRouteName, RouteDefinition>;
+} satisfies PersonRoutesMap;
 
 // Mutations (PUT/DELETE) are a separate concept from the /uiroute component URLs
 // above — see PersonActionResource.java. The path templates come from

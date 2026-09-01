@@ -19,12 +19,12 @@ nesting `${Child(vm)}`, lists `${xs.map(x => Row(x))}`, `String(...)` once at th
 | **1. Event-name typing** | SB wins — adopt generated `JTSPersonEventName` enum + `jtsperson.ts` `eventName()` guard | **Done** — added to Q (`JTSPersonEventName.java`, `pom.xml` `<classes>`, `jtsperson.ts`, all components); removed Q's hand `EvtBackendEvents` (Java iface + `.ts`) and the local `EvtPersonDetailsRowX`. `PERSON_UPDATED` value changed `"person-updated"` → `"PERSON_UPDATED"` on both sides. Q's `EditEvents.CLOSE_REQUESTED = 'close-edit-requested'` left local, matching SB. |
 | **2. Route/component naming** | Full PascalCase convergence to SB (route key == component fn name) | **Done in Q** — `JTSPersonRouteName` enum + order, `routes.ts` keys, `PersonUIResource` switch, `/uiroute/*` URL segments, `PersondetailsRow/Card` → `PersonDetailsRow/Card`, and the Playwright suite all renamed. Q's dedicated `/uiroute/PersonTable` endpoint carve-out kept (Q-only, documented). |
 | **3. Action-URL (mutation) consts** | Generate them from Java, like the enums | **Done on both** — `HonoWebApiSharedConsts.java` (`PERSON = "/person/{id}"`, `DELETE = "/delete"`) is the single source of truth: it feeds the Java `@Path` / `@PutMapping` / `@DeleteMapping` (compile-time constants) **and** an inline Groovy script in `pom.xml` (`gmavenplus-plugin`, `process-classes` phase) that reflects over it and writes `generated/types/web-api-consts.ts` (`export const HonoWebApiConsts = { … } as const`). SB gained `HonoWebApiSharedConsts.java` (it had inline literals); both `routes.ts` now `import {HonoWebApiConsts} from "./generated/types/web-api-consts"`. Q's `hono-web-api-shared-consts.ts` deleted. Q's action-URL keys `updatePerson`/`delete` → `UpdatePerson`/`Delete` to match SB. **Gotcha:** JDK 25 (class file v69) needs `gmavenplus-plugin` 5.1.0 + `org.apache.groovy:groovy` 5.1.1 as a plugin dep; older Groovy fails with "Unsupported class file major version 69". The script avoids `groovy.json` (a separate module) and inlines a 1-line `quote` closure. |
-| **4. `routes` map type alias** | SB's named `PersonRoutesMap` marginally nicer | **Deferred** (cosmetic, low value). |
+| **4. `routes` map type alias** | SB's named `PersonRoutesMap` marginally nicer | **Done** — added `type PersonRoutesMap = Record<JTSPersonRouteName, RouteDefinition>` to Q's `routes.ts`; `satisfies PersonRoutesMap`. |
 | `{ ...personRoutes }` spread in SB `render.ts` | Q's direct assignment is cleaner | **Done** — removed spread in SB. |
 | `npx esbuild` vs `esbuild` in build script | bare `esbuild` (npm puts `.bin` on PATH) | **Done** — SB aligned to bare `esbuild`. |
 | `// SPRING-HONO` marker | rename to `// Java-HONO`, and add to Q | **Done** — renamed in SB (24), added to Q (`routes.ts` route/action entries + url helpers, `PersonUIResource`/`PersonActionResource` `@Path` lines, `hono-web-api-shared-consts.ts`). Marks Java↔JS coupling points. |
 | Codegen-direction docs (SB `development.md`) | Java→TS via Maven plugin is the current reality | **Done** — SB's "Generate Java from TS" section rewritten; `javagen/` mention removed. |
-| Bundle output path (`/js/` vs `/fe/`) | tied to Java static-resource serving | **Deferred** — not touched. |
+| Bundle output path (`/js/` vs `/fe/`) | converge on **`/js/`** (Q's original) | **Done** — SB switched `static/fe/ssr.js` → `static/js/ssr.js` in `package.json`, `application.properties` (`app.ssr.resource`), `application-dev.properties` (devtools exclude), `development.md`, `Dockerfile`, `architecture.md`. Q unchanged (already `/js/`). It's a classpath resource loaded by GraalVM (`getResourceAsStream` / Spring `Resource`), not web-served in Q. **Note (unrelated):** SB's `src/main/resources/static/` *is* web-served, so SB's `ssr.js` is reachable at `/js/ssr.js` — pre-existing; worth locking down separately. |
 | SB filename `personDetailsCard.ts` (caps outlier vs siblings) | lowercase like siblings | **Deferred**. |
 | Q's `NotFoundException` vs SB's `render(PersonRow, null)` fallback for unknown route | Q is correct; SB has a `// TODO: return 404` hack | **Deferred** — fix SB later. |
 
@@ -88,7 +88,7 @@ Same guarantee; SB's named alias is marginally more readable. Cosmetic.
 | Topic | Q | SB |
 |---|---|---|
 | `render.tsx` map build | `const routeDefinitions: Record<string, RouteDefinition> = personRoutes;` | `... = { ...personRoutes };` (pointless spread) |
-| Bundle output path | `target/classes/static/js/ssr.js` | `target/classes/static/fe/ssr.js` |
+| Bundle output path | `target/classes/static/js/ssr.js` | ~~`static/fe/ssr.js`~~ → now `static/js/ssr.js` (converged) |
 | `npm run build` | `esbuild ...` (esbuild on PATH via dep) | `npx esbuild ...` |
 | hono dep range | `^4.13.3` | `^4.11.3` (both resolve ~4.12.5 now) |
 | Marker comments | none | `// SPRING-HONO` on every route line |
@@ -104,13 +104,13 @@ Same guarantee; SB's named alias is marginally more readable. Cosmetic.
 
 ## Still open (see the deferred rows in the status table above)
 
-- **`routes` map type alias** — apply SB's named `PersonRoutesMap` to Q (cosmetic).
-- **Bundle output path** — `/js/` (Q) vs `/fe/` (SB); pick one, mind the Java static-resource config.
 - **`personDetailsCard.ts`** — SB's lone camel-cased filename; lowercase it like its siblings.
 - **Unknown-route fallback** — SB's `render(PersonRow, null)` `// TODO: return 404` hack vs Q's
   proper `NotFoundException`; fix SB.
 - **`close-edit-requested`** — still a local hyphenated const in both `personedit.ts` files; could be
   folded into the generated `JTSPersonEventName` union (e.g. `PersonEditor_CloseCmd`).
 - **`hello.ts`** (SB) — unused demo component; delete.
+- **SB serves `ssr.js`** — SB's `src/main/resources/static/` is web-served, so `/js/ssr.js` is
+  publicly reachable. Move the SSR bundle out of `static/`, or exclude it. Q is fine (classpath-only).
 - Whether PascalCase route names should stay in the URL path (`/uiroute/PersonDetails`) or be
   lowercased in the URL builder only.
