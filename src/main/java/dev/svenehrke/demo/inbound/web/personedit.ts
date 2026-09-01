@@ -62,7 +62,7 @@ export const PersonEditor = (vm: PersonEditModel): HtmlResult => html`
 							type="submit"
 							class="level-item button is-primary"
 							hx-trigger="click consume"
-							hx-put="${personActionUrls.updatePerson.url(vm.id)}"
+							hx-put="${personActionUrls.UpdatePerson.url(vm.id)}"
 							hx-swap="none"
 						>Save
 						</button>

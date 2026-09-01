@@ -10,7 +10,7 @@ export const PersonTable = (vm: PersonTableModel): HtmlResult => html`
 			<thead>
 			<tr>
 				<td colspan="5">
-					<form id="bulkDeleteForm" hx-delete="${personActionUrls.delete.url()}">
+					<form id="bulkDeleteForm" hx-delete="${personActionUrls.Delete.url()}">
 						<button type="submit" class="button">
 							<span class="icon"><i class="material-icons">delete</i></span>
 							<span>Delete</span>

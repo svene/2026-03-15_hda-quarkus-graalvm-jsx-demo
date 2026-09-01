@@ -35,18 +35,16 @@ currently this is WIP. More notes written down than real documentation
     (`JTSPersonEventName.PERSON_UPDATED.name()`), so the Java and TS sides can't drift on the name.
     Enum members are `UPPER_SNAKE` (fired by Java) or `Word_Word` (`// TS-only`); both are
     hyperscript-`send`-safe unquoted, unlike a hyphenated name.
-- `HonoWebApiSharedConsts.java` (just `PERSON` and `DELETE` — the two REST-ish mutation endpoint path
-  templates in `PersonActionResource.java`) is a hand-written Java source file, kept in sync by hand
-  with `hono-web-api-shared-consts.ts`, which is the source of truth for the same two constants on the
-  **frontend** side (`routes.ts`'s `personActionUrls`). (Converging this onto generated constants like
-  the two enums above is a deferred item — see `VARIANT-COMPARISON.md`.)
-  - It can't be generated from Java the same way `JTSPersonRouteName` is: `HonoWebApiConsts`'s values
-    (URL path templates) are consumed as actual runtime string values on the TS side, and
-    typescript-generator's `declarationFile` output only produces types with no runtime representation —
-    unlike `JTSPersonRouteName`, where the TS side only ever needs the string *literals* typechecked
-    against the union, never an imported runtime value. So these two constants are duplicated by hand
-    between `hono-web-api-shared-consts.ts` and `HonoWebApiSharedConsts.java` — keep them in sync
-    manually.
+- `HonoWebApiSharedConsts.java` (`PERSON = "/person/{id}"`, `DELETE = "/delete"`) is the source of
+  truth for the two mutation endpoint path templates — used both in `PersonActionResource.java`'s
+  `@Path(...)` (they're compile-time constants) and, on the frontend, in `routes.ts`'s
+  `personActionUrls`.
+  - typescript-generator can't produce these: it only emits *types*, and the TS side needs the
+    template strings as runtime values (`HonoWebApiConsts.PERSON.replace('{id}', id)`). So instead a
+    small inline Groovy script in `pom.xml` (`gmavenplus-plugin`, bound to `process-classes` like
+    typescript-generator) reflects over `HonoWebApiSharedConsts.HonoWebApiConsts` and writes
+    `generated/types/web-api-consts.ts` (`export const HonoWebApiConsts = { … } as const`), which
+    `routes.ts` imports. Nothing is hand-synced; edit the Java constants and rebuild.
 
 ### Component URLs (uiroute) vs REST-ish mutation endpoints
 
@@ -75,9 +73,9 @@ currently this is WIP. More notes written down than real documentation
   see "Generate JS for GraalVM (hono/html templates)" below.
 - Mutations (`PUT /person/{id}` to save an edit, `DELETE /delete` for bulk delete) stay on their own
   REST-ish paths in a separate class, `PersonActionResource.java` — they don't go through `/uiroute`.
-  `routes.ts`'s `personActionUrls.updatePerson.url(id)` builds the `PUT` URL from
-  `HonoWebApiConsts.PERSON`; `personActionUrls.delete.url()` builds the `DELETE` URL from
-  `HonoWebApiConsts.DELETE`.
+  `routes.ts`'s `personActionUrls.UpdatePerson.url(id)` builds the `PUT` URL from
+  `HonoWebApiConsts.PERSON`; `personActionUrls.Delete.url()` builds the `DELETE` URL from
+  `HonoWebApiConsts.DELETE` (both from generated `web-api-consts.ts` — see above).
 - `RootResource` (`GET /`) redirects to `/uiroute/Page`.
 
 ### Generate JS for GraalVM (hono/html templates)
@@ -132,9 +130,8 @@ export function render(route: string, vmJson: string): string {
 The web layer used JSX until the `hono/html` conversion; afterwards no file under
 `src/main/java/dev/svenehrke/demo/inbound/web/` contained JSX, so all of them were renamed `.tsx` ->
 `.ts`. Changed at the same time: `package.json` `build` script (`render.ts`), `watch.ts` (now
-filters `.endsWith(".ts")`, so it also rebuilds on `route-types.ts` /
-`hono-web-api-shared-consts.ts` edits, which it ignored before), and `tsconfig.json` (dropped the
-now-dead `jsx` / `jsxImportSource` options).
+filters `.endsWith(".ts")`, so it also rebuilds on plain `.ts` edits like `route-types.ts`, which it
+ignored before), and `tsconfig.json` (dropped the now-dead `jsx` / `jsxImportSource` options).
 
 ### Live reload for the browser
 During development the browser should automatically refresh when one of the .ts files is changed.

@@ -1,6 +1,6 @@
 import {ActionUrlDefinition, RouteDefinition} from "./route-types";
 import {JTSPersonRouteName} from "./generated/types/vm-types";
-import {HonoWebApiConsts} from "./hono-web-api-shared-consts";
+import {HonoWebApiConsts} from "./generated/types/web-api-consts";
 import {Page} from "./personpage";
 import {PersonDetails} from "./persondetails";
 import {PersonRow} from "./personrow";
@@ -58,13 +58,16 @@ export const personRoutes = {
 	},
 } satisfies Record<JTSPersonRouteName, RouteDefinition>;
 
-// Mutations (PUT/DELETE) are a separate concept from the /uiroute component
-// URLs above — see PersonActionResource.java.
+// Mutations (PUT/DELETE) are a separate concept from the /uiroute component URLs
+// above — see PersonActionResource.java. The path templates come from
+// generated/types/web-api-consts.ts, generated from HonoWebApiSharedConsts.java
+// by the gmavenplus script in pom.xml (Java is the source of truth, also used in
+// PersonActionResource's @Path(...)).
 export const personActionUrls = {
-	updatePerson: { // Java-HONO
+	UpdatePerson: { // Java-HONO
 		url: (id: number) => HonoWebApiConsts.PERSON.replace('{id}', id + ''),
 	},
-	delete: { // Java-HONO
+	Delete: { // Java-HONO
 		url: () => HonoWebApiConsts.DELETE,
 	},
 } satisfies Record<string, ActionUrlDefinition>;
