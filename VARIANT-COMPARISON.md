@@ -10,7 +10,6 @@ layers have been converged; what's left is below.
 
 | Item | Q | SB | Note |
 |---|---|---|---|
-| SSR bundle location | `target/classes/static/js/ssr.js`, `app.ssr.resource=static/js/ssr.js` | `target/classes/graaljs/ssr.js`, `app.ssr.resource=classpath:/graaljs/ssr.js` | SB moved it out of `static/` so Spring wouldn't web-serve it. Quarkus serves `META-INF/resources/`, not `target/classes/static/`, so Q's is not exposed — but moving Q to `graaljs/` too would make the two identical and kill the "why different?" question. Low priority. |
 | SB `architecture.md` | (no equivalent doc) | stale — predates the convergence (`generate-java-from-hono.ts`, `RouteBuilder`, "Java records generated from TypeScript", `generated-sources/tsjava`) | Update it to match reality, or delete it. |
 
 ## Deliberate — do not align
