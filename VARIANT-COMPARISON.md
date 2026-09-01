@@ -25,8 +25,10 @@ nesting `${Child(vm)}`, lists `${xs.map(x => Row(x))}`, `String(...)` once at th
 | `// SPRING-HONO` marker | rename to `// Java-HONO`, and add to Q | **Done** — renamed in SB (24), added to Q (`routes.ts` route/action entries + url helpers, `PersonUIResource`/`PersonActionResource` `@Path` lines, `hono-web-api-shared-consts.ts`). Marks Java↔JS coupling points. |
 | Codegen-direction docs (SB `development.md`) | Java→TS via Maven plugin is the current reality | **Done** — SB's "Generate Java from TS" section rewritten; `javagen/` mention removed. |
 | Bundle output path (`/js/` vs `/fe/`) | converge on **`/js/`** (Q's original) | **Done** — SB switched `static/fe/ssr.js` → `static/js/ssr.js` in `package.json`, `application.properties` (`app.ssr.resource`), `application-dev.properties` (devtools exclude), `development.md`, `Dockerfile`, `architecture.md`. Q unchanged (already `/js/`). It's a classpath resource loaded by GraalVM (`getResourceAsStream` / Spring `Resource`), not web-served in Q. **Note (unrelated):** SB's `src/main/resources/static/` *is* web-served, so SB's `ssr.js` is reachable at `/js/ssr.js` — pre-existing; worth locking down separately. |
-| SB filename `personDetailsCard.ts` (caps outlier vs siblings) | lowercase like siblings | **Deferred**. |
-| Q's `NotFoundException` vs SB's `render(PersonRow, null)` fallback for unknown route | Q is correct; SB has a `// TODO: return 404` hack | **Deferred** — fix SB later. |
+| `close-edit-requested` local hyphenated const in `personedit.ts` | fold into generated `JTSPersonEventName` as `PersonEditor_CloseRequested` | **Done on both** — added `PersonEditor_CloseRequested // TS-only` to `JTSPersonEventName.java`; `personedit.ts` uses `eventName('PersonEditor_CloseRequested')` (unquoted in the hyperscript `send`, like `PersonDetailsRow_CloseCmd`); local `EditEvents` const removed. |
+| `hello.ts` (SB) — unused demo `Hello` component | delete | **Done** — `git rm`'d from SB. |
+| SB filename `personDetailsCard.ts` (caps outlier vs siblings) | lowercase like siblings | **Done** — `git mv`'d to `persondetailscard.ts` (matches Q + its 6 siblings); the two `"./personDetailsCard"` import specifiers updated. |
+| Q's `NotFoundException` vs SB's `render(PersonRow, null)` fallback for unknown route | Q is correct; SB has a `// TODO: return 404` hack | **Done** — SB `PersonUIController` now `throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown uiroute: " + name)` for an unknown route name, matching Q's `NotFoundException`. |
 
 Both projects' Playwright suites: **13/13 green** after all of the above.
 
@@ -104,12 +106,6 @@ Same guarantee; SB's named alias is marginally more readable. Cosmetic.
 
 ## Still open (see the deferred rows in the status table above)
 
-- **`personDetailsCard.ts`** — SB's lone camel-cased filename; lowercase it like its siblings.
-- **Unknown-route fallback** — SB's `render(PersonRow, null)` `// TODO: return 404` hack vs Q's
-  proper `NotFoundException`; fix SB.
-- **`close-edit-requested`** — still a local hyphenated const in both `personedit.ts` files; could be
-  folded into the generated `JTSPersonEventName` union (e.g. `PersonEditor_CloseCmd`).
-- **`hello.ts`** (SB) — unused demo component; delete.
 - **SB serves `ssr.js`** — SB's `src/main/resources/static/` is web-served, so `/js/ssr.js` is
   publicly reachable. Move the SSR bundle out of `static/`, or exclude it. Q is fine (classpath-only).
 - Whether PascalCase route names should stay in the URL path (`/uiroute/PersonDetails`) or be
