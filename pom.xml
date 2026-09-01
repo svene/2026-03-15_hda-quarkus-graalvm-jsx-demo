@@ -151,6 +151,7 @@
                     </classPatterns>
                     <classes>
                         <class>dev.svenehrke.demo.inbound.web.JTSPersonRouteName</class>
+                        <class>dev.svenehrke.demo.inbound.web.JTSPersonEventName</class>
                     </classes>
                     <outputFile>${project.basedir}/src/main/java/dev/svenehrke/demo/inbound/web/generated/types/vm-types.d.ts</outputFile>
                     <outputFileType>declarationFile</outputFileType>

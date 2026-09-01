@@ -19,18 +19,27 @@ currently this is WIP. More notes written down than real documentation
   or `mvn quarkus:dev`; plain `mvn compile` stops one phase too early and won't trigger it).
 - `.ts` components import the generated types directly, e.g.\
   `import {PersonDetailModel} from "./generated/types/vm-types";`
-- The same plugin also generates a TS union type from the `JTSPersonRouteName` enum (which lists every
-  component/uiroute name — see "Component URLs (uiroute)" below):
-  `export type JTSPersonRouteName = "page" | "personDetails" | ...`.
-  - `JTSPersonRouteName` is the single source of truth for the route-name strings that connect
-    `PersonUIResource.java` (`renderer.render(JTSPersonRouteName.personDetails, vm)`) to `routes.ts`'s
-    `personRoutes` map (see "Component URLs (uiroute)" below) — a typo or a route removed on the Java
-    side is caught by TypeScript instead of silently falling through to a "ROUTE NOT FOUND" fallback at
-    runtime.
-- `HonoWebApiSharedConsts.java` (currently just `PERSON` and `DELETE` — the two REST-ish mutation
-  endpoints in `PersonActionResource.java`) is a hand-written Java source file, kept in sync by hand with
-  `hono-web-api-shared-consts.ts`, which is the source of truth for the same two constants on the
-  **frontend** side (`routes.ts`'s `personActionUrls`).
+- The same plugin also generates a TS union type from each of two enums, listed in the plugin's
+  `<classes>` in `pom.xml` (`mapEnum: asUnion`):
+  - `JTSPersonRouteName` — every component/uiroute name (see "Component URLs (uiroute)" below):
+    `export type JTSPersonRouteName = "Page" | "PersonDetails" | ...`. Single source of truth for the
+    route-name strings that connect `PersonUIResource.java`
+    (`renderer.render(JTSPersonRouteName.PersonDetails, vm)`) to `routes.ts`'s `personRoutes` map — a
+    typo or a route removed on the Java side is a TypeScript error instead of a runtime "ROUTE NOT
+    FOUND" fallback.
+  - `JTSPersonEventName` — every htmx/hyperscript event name used to coordinate the UI
+    (`export type JTSPersonEventName = "PERSON_UPDATED" | "PersonDetailsRow_CloseCmd"`). `.ts`
+    components never write an event name as a bare string — they call `jtsperson.ts`'s
+    `eventName('...')` guard, which typechecks the literal against this union. `PERSON_UPDATED` is
+    also the event `PersonActionResource.java` fires in its `HX-Trigger` header
+    (`JTSPersonEventName.PERSON_UPDATED.name()`), so the Java and TS sides can't drift on the name.
+    Enum members are `UPPER_SNAKE` (fired by Java) or `Word_Word` (`// TS-only`); both are
+    hyperscript-`send`-safe unquoted, unlike a hyphenated name.
+- `HonoWebApiSharedConsts.java` (just `PERSON` and `DELETE` — the two REST-ish mutation endpoint path
+  templates in `PersonActionResource.java`) is a hand-written Java source file, kept in sync by hand
+  with `hono-web-api-shared-consts.ts`, which is the source of truth for the same two constants on the
+  **frontend** side (`routes.ts`'s `personActionUrls`). (Converging this onto generated constants like
+  the two enums above is a deferred item — see `VARIANT-COMPARISON.md`.)
   - It can't be generated from Java the same way `JTSPersonRouteName` is: `HonoWebApiConsts`'s values
     (URL path templates) are consumed as actual runtime string values on the TS side, and
     typescript-generator's `declarationFile` output only produces types with no runtime representation —
@@ -41,15 +50,15 @@ currently this is WIP. More notes written down than real documentation
 
 ### Component URLs (uiroute) vs REST-ish mutation endpoints
 
-- Every GET route that renders an HTML fragment and only ever needs an (optional) `id` — `page`,
-  `personDetails`, `personRow`, `personEdit`, `personDetailsCard`, `personDetailsRow` — is dispatched
+- Every GET route that renders an HTML fragment and only ever needs an (optional) `id` — `Page`,
+  `PersonDetails`, `PersonRow`, `PersonEditor`, `PersonDetailsCard`, `PersonDetailsRow` — is dispatched
   through a single endpoint, `PersonUIResource.uiroute()` at `@Path("/uiroute/{name}")`, keyed by
   `JTSPersonRouteName`, instead of each one getting its own `@Path`. `id` is passed as a query param
-  (`/uiroute/personDetails?id=5`). An unknown `name` returns 404.
+  (`/uiroute/PersonDetails?id=5`). An unknown `name` returns 404.
 - A route needing different or additional parameters doesn't grow `uiroute()`'s signature — it gets its
-  own dedicated `@Path` method instead. `personTable` is the current example: it needs `search`, not `id`,
-  so it has its own `PersonUIResource.personTable()` at `@Path("/personTable")`. JAX-RS matches the literal
-  `/uiroute/personTable` path before falling back to the `/uiroute/{name}` template, so the two coexist
+  own dedicated `@Path` method instead. `PersonTable` is the current example: it needs `search`, not `id`,
+  so it has its own `PersonUIResource.personTable()` at `@Path("/PersonTable")`. JAX-RS matches the literal
+  `/uiroute/PersonTable` path before falling back to the `/uiroute/{name}` template, so the two coexist
   without ambiguity. Both still call `renderer.render(JTSPersonRouteName.xxx, vm)`, so nothing on the
   frontend (`routes.ts`) needs to change when a route moves from the generic dispatcher to its own method.
   - `uiroute()`'s switch only lists the routes it actually serves, falling back to `default -> throw new
@@ -61,7 +70,7 @@ currently this is WIP. More notes written down than real documentation
     already documents for `render.ts`'s route lookup and for an unknown `name` in the URL.
 - These are deliberately treated as a separate concept from REST resources — they're URLs for fetching a
   rendered UI component, not for a domain resource. `routes.ts`'s `personRoutes` map builds them
-  (`personRoutes.personDetails.url(id)`, `personRoutes.personEdit.url(id)`, `personRoutes.personTable.url()`,
+  (`personRoutes.PersonDetails.url(id)`, `personRoutes.PersonEditor.url(id)`, `personRoutes.PersonTable.url()`,
   ...) from `JTSPersonRouteName` values, and pairs each URL with the render function for that route —
   see "Generate JS for GraalVM (hono/html templates)" below.
 - Mutations (`PUT /person/{id}` to save an edit, `DELETE /delete` for bulk delete) stay on their own
@@ -69,7 +78,7 @@ currently this is WIP. More notes written down than real documentation
   `routes.ts`'s `personActionUrls.updatePerson.url(id)` builds the `PUT` URL from
   `HonoWebApiConsts.PERSON`; `personActionUrls.delete.url()` builds the `DELETE` URL from
   `HonoWebApiConsts.DELETE`.
-- `RootResource` (`GET /`) redirects to `/uiroute/page`.
+- `RootResource` (`GET /`) redirects to `/uiroute/Page`.
 
 ### Generate JS for GraalVM (hono/html templates)
 
@@ -152,8 +161,8 @@ new EventSource("/dev-reload")
   (`~/.sdkman/candidates/java/25.0.2-graal`), and starts a fresh instance on port 8080 before every run —
   the in-memory H2 database is always re-seeded from scratch (`DBInitializer`, `Faker` with seed `0`), so
   the tests can rely on deterministic data (e.g. the first seeded person is always "Jackie Rau").
-- The tests exercise the actual app routes: `/uiroute/{name}` component URLs (`/uiroute/page`,
-  `/uiroute/personDetails?id=..`, ...) plus the separate `PUT /person/{id}` and `DELETE /delete`
+- The tests exercise the actual app routes: `/uiroute/{name}` component URLs (`/uiroute/Page`,
+  `/uiroute/PersonDetails?id=..`, ...) plus the separate `PUT /person/{id}` and `DELETE /delete`
   mutation endpoints.
 
 

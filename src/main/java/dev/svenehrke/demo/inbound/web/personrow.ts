@@ -14,7 +14,7 @@ export const PersonRow = (vm: PersonTableRowModel): HtmlResult => html`
 		hx-trigger="click"
 		hx-target="this"
 		hx-swap="outerHTML"
-		hx-get="${personRoutes.personDetails.url(vm.id)}"
+		hx-get="${personRoutes.PersonDetails.url(vm.id)}"
 	>
 		<td hx-on:click="event.stopPropagation()">
 			<input type="checkbox" name="selection" value="${vm.id}" form="bulkDeleteForm"></input>

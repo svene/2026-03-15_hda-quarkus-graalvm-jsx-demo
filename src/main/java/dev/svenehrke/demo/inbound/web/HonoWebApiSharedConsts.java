@@ -6,8 +6,4 @@ public interface HonoWebApiSharedConsts {
         String PERSON = "/person/{id}";
         String DELETE = "/delete";
     }
-
-    interface EvtBackendEvents {
-        String PERSON_UPDATED = "person-updated";
-    }
 }

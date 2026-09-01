@@ -13,7 +13,7 @@ import jakarta.ws.rs.core.MediaType;
 
 /**
  * Component URLs — a separate concept from the REST-ish mutation endpoints in
- * {@link PersonActionResource}. Every GET route that renders a JSX fragment is
+ * {@link PersonActionResource}. Every GET route that renders an HTML fragment is
  * keyed by {@link JTSPersonRouteName}; most are dispatched through the generic
  * "/uiroute/{name}" endpoint, while routes needing parameters beyond
  * {@code id} get their own dedicated {@code @Path} method (e.g. {@link #personTable}).
@@ -34,7 +34,7 @@ public class PersonUIResource {
 	 * matches the literal path first, so the two coexist without ambiguity.
 	 */
 	@GET
-	@Path("/{name}")
+	@Path("/{name}") // Java-HONO
 	@Produces(MediaType.TEXT_HTML)
 	public String uiroute(@PathParam("name") String name, @QueryParam("id") Integer id) {
 		JTSPersonRouteName route;
@@ -44,19 +44,19 @@ public class PersonUIResource {
 			throw new NotFoundException("Unknown uiroute: " + name);
 		}
 		Object vm = switch (route) {
-			case page -> new PersonPageModel(peopleService.personTableModel());
-			case personDetails, personDetailsCard, personDetailsRow -> peopleService.personDetailModel(id);
-			case personRow -> peopleService.personTableRowModel(id);
-			case personEdit -> peopleService.personEditModel(id);
+			case Page -> new PersonPageModel(peopleService.personTableModel());
+			case PersonDetails, PersonDetailsCard, PersonDetailsRow -> peopleService.personDetailModel(id);
+			case PersonRow -> peopleService.personTableRowModel(id);
+			case PersonEditor -> peopleService.personEditModel(id);
 			default -> throw new IllegalStateException(route + " is served by its own dedicated endpoint, not " + getClass().getSimpleName() + "#uiroute");
 		};
 		return renderer.render(route, vm);
 	}
 
 	@GET
-	@Path("/personTable")
+	@Path("/PersonTable") // Java-HONO
 	@Produces(MediaType.TEXT_HTML)
 	public String personTable(@QueryParam("search") String search) {
-		return renderer.render(JTSPersonRouteName.personTable, peopleService.peopleForSearch(search));
+		return renderer.render(JTSPersonRouteName.PersonTable, peopleService.peopleForSearch(search));
 	}
 }

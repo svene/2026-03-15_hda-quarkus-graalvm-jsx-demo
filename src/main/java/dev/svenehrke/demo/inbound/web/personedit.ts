@@ -1,11 +1,11 @@
 import {html} from "hono/html";
 import {PersonEditModel} from "./generated/types/vm-types";
 import {personActionUrls, personRoutes} from "./routes";
-import {EvtBackendEvents} from "./hono-web-api-shared-consts";
+import {eventName} from "./jtsperson";
 import {HtmlResult} from "./route-types";
 
 // The Save button PUTs to updatePerson and expects the backend to answer with a
-// 'person-updated'(id) event; hx-swap="none" leaves the DOM to the <template>
+// 'PERSON_UPDATED'(id) event; hx-swap="none" leaves the DOM to the <template>
 // event handlers above that listen for that event.
 export const PersonEditor = (vm: PersonEditModel): HtmlResult => html`
 	<tr id="row-${vm.id}-edit">
@@ -13,13 +13,13 @@ export const PersonEditor = (vm: PersonEditModel): HtmlResult => html`
 			hx-trigger="${EditEvents.CLOSE_REQUESTED}[detail.id == ${vm.id}] from:'closest tr'"
 			hx-target="closest tr"
 			hx-swap="outerHTML"
-			hx-get="${personRoutes.personDetailsCard.url(vm.id)}"
+			hx-get="${personRoutes.PersonDetailsCard.url(vm.id)}"
 		></template>
 		<template
-			hx-trigger="${EvtBackendEvents.PERSON_UPDATED}[detail.id === ${vm.id}] from:'closest tr'"
+			hx-trigger="${eventName('PERSON_UPDATED')}[detail.id === ${vm.id}] from:'closest tr'"
 			hx-target="closest tr"
 			hx-swap="outerHTML"
-			hx-get="${personRoutes.personDetailsCard.url(vm.id)}"
+			hx-get="${personRoutes.PersonDetailsCard.url(vm.id)}"
 		></template>
 		<td colspan="4" style="padding: 0px">
 			<div class="card p-5 my-2">

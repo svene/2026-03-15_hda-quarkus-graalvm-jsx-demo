@@ -20,7 +20,7 @@ public class PersonActionResource {
 	PeopleService peopleService;
 
 	@PUT
-	@Path(HonoWebApiSharedConsts.HonoWebApiConsts.PERSON)
+	@Path(HonoWebApiSharedConsts.HonoWebApiConsts.PERSON) // Java-HONO
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response updatePerson(@PathParam("id") int id, @BeanParam PersonEditForm personEditForm) {
 		peopleService.updatePerson(id, personEditForm.toModel(id));
@@ -30,18 +30,18 @@ public class PersonActionResource {
 				HTMXConsts.HX_TRIGGER,
 				"""
 					{"%s": {"id": %d}}\
-					""".formatted(HonoWebApiSharedConsts.EvtBackendEvents.PERSON_UPDATED, id)
+					""".formatted(JTSPersonEventName.PERSON_UPDATED.name(), id)
 			)
 			.build();
 	}
 
 	@DELETE
-	@Path(HonoWebApiSharedConsts.HonoWebApiConsts.DELETE)
+	@Path(HonoWebApiSharedConsts.HonoWebApiConsts.DELETE) // Java-HONO
 	public Response deleteRows(@QueryParam("selection") List<Integer> selection) {
 		peopleService.deleteByIds(selection);
 		return Response
 			.ok()
-			.header(HTMXConsts.HX_REDIRECT, "/uiroute/" + JTSPersonRouteName.page.name())
+			.header(HTMXConsts.HX_REDIRECT, "/uiroute/" + JTSPersonRouteName.Page.name())
 			.build();
 	}
 

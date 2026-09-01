@@ -1,18 +1,18 @@
 import {test, expect} from '@playwright/test';
 
 const BASE_URL = 'http://localhost:8080';
-const PAGE_URL = BASE_URL + '/uiroute/page';
+const PAGE_URL = BASE_URL + '/uiroute/Page';
 
 // Seed data (Faker with seed 0): first person is Jackie Rau, Waelchi Orchard
 const FIRST_PERSON = { firstName: 'Jackie', lastName: 'Rau', street: 'Waelchi Orchard' };
 
 // URL predicates — component URLs live under /uiroute/{name}, anchored so
-// 'personDetails' doesn't also match 'personDetailsRow'/'personDetailsCard'
-const isDetailsUrl     = (url: string) => /\/uiroute\/personDetails(\?|$)/.test(url);
-const isDetailsRowUrl  = (url: string) => /\/uiroute\/personDetailsRow(\?|$)/.test(url);
-const isDetailsCardUrl = (url: string) => /\/uiroute\/personDetailsCard(\?|$)/.test(url);
-const isEditUrl        = (url: string) => /\/uiroute\/personEdit(\?|$)/.test(url);
-const isRowUrl         = (url: string) => /\/uiroute\/personRow(\?|$)/.test(url);
+// 'PersonDetails' doesn't also match 'PersonDetailsRow'/'PersonDetailsCard'
+const isDetailsUrl     = (url: string) => /\/uiroute\/PersonDetails(\?|$)/.test(url);
+const isDetailsRowUrl  = (url: string) => /\/uiroute\/PersonDetailsRow(\?|$)/.test(url);
+const isDetailsCardUrl = (url: string) => /\/uiroute\/PersonDetailsCard(\?|$)/.test(url);
+const isEditUrl        = (url: string) => /\/uiroute\/PersonEditor(\?|$)/.test(url);
+const isRowUrl         = (url: string) => /\/uiroute\/PersonRow(\?|$)/.test(url);
 
 test('has title', async ({ page }) => {
   await page.goto(PAGE_URL);
@@ -44,7 +44,7 @@ test('search filters the table', async ({ page }) => {
 
   const searchInput = page.locator('input[name="search"]');
   await Promise.all([
-    page.waitForResponse(resp => resp.url().includes('/uiroute/personTable')),
+    page.waitForResponse(resp => resp.url().includes('/uiroute/PersonTable')),
     searchInput.fill(FIRST_PERSON.firstName),
   ]);
 
@@ -66,11 +66,11 @@ test('clearing search restores full list', async ({ page }) => {
 
   const searchInput = page.locator('input[name="search"]');
   await Promise.all([
-    page.waitForResponse(resp => resp.url().includes('/uiroute/personTable')),
+    page.waitForResponse(resp => resp.url().includes('/uiroute/PersonTable')),
     searchInput.fill(FIRST_PERSON.firstName),
   ]);
   await Promise.all([
-    page.waitForResponse(resp => resp.url().includes('/uiroute/personTable')),
+    page.waitForResponse(resp => resp.url().includes('/uiroute/PersonTable')),
     searchInput.clear(),
   ]);
 
@@ -212,13 +212,13 @@ test('saving an edit updates the row in the table', async ({ page }) => {
   await firstNameInput.fill(newFirstName);
 
   // Register the detailsrow listener BEFORE clicking Save so we cannot miss the
-  // response that fires immediately after the PUT (via the person-updated HTMX event).
+  // response that fires immediately after the PUT (via the PERSON_UPDATED HTMX event).
   const detailsRowResponse = page.waitForResponse(resp => isDetailsRowUrl(resp.url()));
   await Promise.all([
     page.waitForResponse(resp => resp.request().method() === 'PUT' && resp.url().includes('/person/')),
     page.locator('table tbody tr').nth(1).locator('button', { hasText: 'Save' }).click(),
   ]);
-  // After the PUT the backend fires a person-updated event; PersonDetailsRow reloads itself
+  // After the PUT the backend fires a PERSON_UPDATED event; PersonDetailsRow reloads itself
   await detailsRowResponse;
 
   // The header row should reflect the updated name

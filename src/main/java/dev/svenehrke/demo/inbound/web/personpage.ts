@@ -18,7 +18,7 @@ export const Page = (vm: PersonPageModel): HtmlResult => Layout(html`
 						name="search"
 						placeholder="Search for firstname or lastname"
 						hx-trigger="input changed delay:500ms"
-						hx-get="${personRoutes.personTable.url()}"
+						hx-get="${personRoutes.PersonTable.url()}"
 						hx-target="#result-table"
 					/>
 				</div>

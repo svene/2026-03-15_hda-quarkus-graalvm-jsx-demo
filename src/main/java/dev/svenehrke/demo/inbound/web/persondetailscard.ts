@@ -1,17 +1,18 @@
 import {html} from "hono/html";
 import {PersonDetailModel} from "./generated/types/vm-types";
+import {eventName} from "./jtsperson";
 import {personRoutes} from "./routes";
 import {HtmlResult} from "./route-types";
 
-export const PersondetailsCard = (vm: PersonDetailModel): HtmlResult => html`
+export const PersonDetailsCard = (vm: PersonDetailModel): HtmlResult => html`
 	<tr
 		id="row-${vm.id}-details"
 		style="cursor: pointer"
 		hx-trigger="click"
 		hx-target="this"
 		hx-swap="outerHTML"
-		hx-get="${personRoutes.personEdit.url(vm.id)}"
-		_="on 'close-details-requested'(id) from <body/> if id == ${vm.id} remove me end"
+		hx-get="${personRoutes.PersonEditor.url(vm.id)}"
+		_="on ${eventName('PersonDetailsRow_CloseCmd')}(id) from <body/> if id == ${vm.id} remove me end"
 	>
 		<td colspan="5" style="padding-left: 30px">
 
