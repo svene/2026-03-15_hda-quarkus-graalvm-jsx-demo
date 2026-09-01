@@ -1,4 +1,3 @@
-import {renderToString} from 'hono/jsx/dom/server';
 import {ActionUrlDefinition, RouteDefinition} from "./route-types";
 import {JTSPersonRouteName} from "./generated/types/vm-types";
 import {HonoWebApiConsts} from "./hono-web-api-shared-consts";
@@ -29,31 +28,31 @@ const nameIdUrl = (name: JTSPersonRouteName, id: number) =>
 export const personRoutes = {
 	page: {
 		url: () => nameUrl('page'),
-		render: (vm: any) => renderToString(<Page vm={vm}/>)
+		render: (vm: any) => Page(vm),
 	},
 	personTable: {
 		url: () => nameUrl('personTable'),
-		render: (vm: any) => renderToString(<PersonTable vm={vm}/>)
+		render: (vm: any) => PersonTable(vm),
 	},
 	personDetails: {
 		url: (id: number) => nameIdUrl('personDetails', id),
-		render: (vm: any) => renderToString(<PersonDetails vm={vm}/>)
+		render: (vm: any) => PersonDetails(vm),
 	},
 	personRow: {
 		url: (id: number) => nameIdUrl('personRow', id),
-		render: (vm: any) => renderToString(<PersonRow vm={vm}/>)
+		render: (vm: any) => PersonRow(vm),
 	},
 	personEdit: {
 		url: (id: number) => nameIdUrl('personEdit', id),
-		render: (vm: any) => renderToString(<PersonEditor vm={vm}/>)
+		render: (vm: any) => PersonEditor(vm),
 	},
 	personDetailsCard: {
 		url: (id: number) => nameIdUrl('personDetailsCard', id),
-		render: (vm: any) => renderToString(<PersondetailsCard vm={vm}/>)
+		render: (vm: any) => PersondetailsCard(vm),
 	},
 	personDetailsRow: {
 		url: (id: number) => nameIdUrl('personDetailsRow', id),
-		render: (vm: any) => renderToString(<PersondetailsRow vm={vm}/>)
+		render: (vm: any) => PersondetailsRow(vm),
 	},
 } satisfies Record<JTSPersonRouteName, RouteDefinition>;
 

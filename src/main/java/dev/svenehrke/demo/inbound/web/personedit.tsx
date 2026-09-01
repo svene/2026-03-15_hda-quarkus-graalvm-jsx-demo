@@ -1,26 +1,27 @@
+import {html} from "hono/html";
 import {PersonEditModel} from "./generated/types/vm-types";
 import {personActionUrls, personRoutes} from "./routes";
 import {EvtBackendEvents} from "./hono-web-api-shared-consts";
+import {HtmlResult} from "./route-types";
 
-export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
-	<tr id={`row-${vm.id}-edit`}>
+// The Save button PUTs to updatePerson and expects the backend to answer with a
+// 'person-updated'(id) event; hx-swap="none" leaves the DOM to the <template>
+// event handlers above that listen for that event.
+export const PersonEditor = (vm: PersonEditModel): HtmlResult => html`
+	<tr id="row-${vm.id}-edit">
 		<template
-			hx-trigger={`
-			${EditEvents.CLOSE_REQUESTED}[detail.id == ${vm.id}] from:"closest tr"
-			`}
+			hx-trigger="${EditEvents.CLOSE_REQUESTED}[detail.id == ${vm.id}] from:'closest tr'"
 			hx-target="closest tr"
 			hx-swap="outerHTML"
-			hx-get={personRoutes.personDetailsCard.url(vm.id)}
+			hx-get="${personRoutes.personDetailsCard.url(vm.id)}"
 		></template>
 		<template
-			hx-trigger={`
-			${EvtBackendEvents.PERSON_UPDATED}[detail.id === ${vm.id}] from:"closest tr"
-			`}
+			hx-trigger="${EvtBackendEvents.PERSON_UPDATED}[detail.id === ${vm.id}] from:'closest tr'"
 			hx-target="closest tr"
 			hx-swap="outerHTML"
-			hx-get={personRoutes.personDetailsCard.url(vm.id)}
+			hx-get="${personRoutes.personDetailsCard.url(vm.id)}"
 		></template>
-		<td colSpan={4} style="padding: 0px">
+		<td colspan="4" style="padding: 0px">
 			<div class="card p-5 my-2">
 				<form>
 					<div class="fixed-grid">
@@ -29,7 +30,7 @@ export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
 								<div class="field">
 									<label class="label">Firstname</label>
 									<div class="control">
-										<input class="input" type="text" name="firstName" value={vm.firstName}></input>
+										<input class="input" type="text" name="firstName" value="${vm.firstName}"></input>
 									</div>
 								</div>
 							</div>
@@ -37,7 +38,7 @@ export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
 								<div class="field">
 									<label class="label">Lastname</label>
 									<div class="control">
-										<input class="input" type="text" name="lastName" value={vm.lastName}></input>
+										<input class="input" type="text" name="lastName" value="${vm.lastName}"></input>
 									</div>
 								</div>
 							</div>
@@ -45,7 +46,7 @@ export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
 								<div class="field">
 									<label class="label">Street</label>
 									<div class="control">
-										<input class="input" type="text" name="streetName" value={vm.streetName}></input>
+										<input class="input" type="text" name="streetName" value="${vm.streetName}"></input>
 									</div>
 								</div>
 							</div>
@@ -54,15 +55,15 @@ export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
 					<nav class="level">
 						<button
 							class="level-item button"
-							_={`on click halt the event then send '${EditEvents.CLOSE_REQUESTED}'(id:${vm.id})`}
+							_="on click halt the event then send '${EditEvents.CLOSE_REQUESTED}'(id:${vm.id})"
 						>&lt; Back
 						</button>
 						<button
 							type="submit"
 							class="level-item button is-primary"
 							hx-trigger="click consume"
-							hx-put={personActionUrls.updatePerson.url(vm.id)} /* Expects backend to respond with 'person-updated'(id) event */
-							hx-swap="none" /* Works with event handling of 'person-updated' */
+							hx-put="${personActionUrls.updatePerson.url(vm.id)}"
+							hx-swap="none"
 						>Save
 						</button>
 					</nav>
@@ -70,7 +71,7 @@ export const PersonEditor = ({ vm }: {vm: PersonEditModel}) => (
 			</div>
 		</td>
 	</tr>
-);
+`;
 
 const EditEvents = {
 	CLOSE_REQUESTED: 'close-edit-requested',

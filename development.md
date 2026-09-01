@@ -71,16 +71,21 @@ currently this is WIP. More notes written down than real documentation
   `HonoWebApiConsts.DELETE`.
 - `RootResource` (`GET /`) redirects to `/uiroute/page`.
 
-### Generate JS from JSX for GraalVM
+### Generate JS for GraalVM (hono/html templates)
 
+- The `.tsx` components render HTML with hono's `html` tagged-template function
+  (`import {html} from "hono/html"`), not with JSX. Each component is a plain function
+  `(vm: SomeModel): HtmlResult => html`...`` where `HtmlResult = ReturnType<typeof html>`
+  (see `route-types.ts`). The files keep the `.tsx` extension for now even though none of
+  them contain JSX any more — see "Possible cleanup: `.tsx` -> `.ts`" below.
 - started by invoking `npm run build`...
 - ... which runs:\
 `esbuild src/main/java/dev/svenehrke/demo/inbound/web/render.tsx --bundle --platform=neutral --format=cjs --outfile=target/classes/static/js/ssr.js`
-- This means a single JS file (`ssr.js`) is generated from the JSX/TS files to be used from Java via GraalVM.
+- This means a single JS file (`ssr.js`) is generated from the `.tsx`/`.ts` files to be used from Java via GraalVM.
 - `render.tsx` exports a single `render(route, vmJson)` entry function, but it doesn't dispatch itself —
   it looks `route` up in `routes.tsx`'s `personRoutes` map and calls that entry's `render(vm)`:
 ````JS
-import { renderToString } from 'hono/jsx/dom/server';
+import {html} from 'hono/html';
 import {personRoutes} from "./routes";
 import {RouteDefinition} from "./route-types";
 
@@ -89,12 +94,18 @@ export function render(route: string, vmJson: string): string {
   const routeDefinition = routeDefinitions[route];
   if (routeDefinition) {
     const vm = JSON.parse(vmJson);
-    return routeDefinition.render(vm);
+    return String(routeDefinition.render(vm));
   } else {
-    return renderToString(<div>{`ROUTE '${route}' NOT FOUND`}</div>)
+    return String(html`<div>ROUTE '${route}' NOT FOUND</div>`);
   }
 }
 ````
+- **Why the `String(...)` at the boundary matters:** the per-route `render` functions return
+  `HtmlResult` (a boxed `HtmlEscapedString`, possibly a `Promise`), but `JsxRenderer.java` calls
+  `result.asString()` on whatever this function returns, which only works on a primitive JS string.
+  `render.tsx`'s header comment has the full explanation (boxed-String unboxing, the union collapse,
+  hono's stringify phase). Rule of thumb: `HtmlResult` everywhere inside the components, stringify
+  exactly once in `render.tsx`.
 - `routes.tsx`'s `personRoutes` is typed as `satisfies Record<JTSPersonRouteName, RouteDefinition>` — every
   value of the generated `JTSPersonRouteName` union must have a `{url, render}` entry, or the file fails
   to typecheck. This is what actually guarantees every route has both a URL builder and a render
@@ -106,6 +117,20 @@ export function render(route: string, vmJson: string): string {
   is ever called).
 - Adding a new route means: add the `JTSPersonRouteName` enum value, add its `case` in
   `PersonUIResource.uiroute()`'s Java `switch`, and add its entry to `personRoutes` in `routes.tsx`.
+
+#### Possible cleanup: `.tsx` -> `.ts` (later)
+
+Since the move from JSX to `hono/html` tagged templates, **no file under
+`src/main/java/dev/svenehrke/demo/inbound/web/` contains JSX any more**, so every `.tsx` there could
+become `.ts`. It's a small, genuine complexity reduction: no more `jsx` / `jsxImportSource` in
+`tsconfig.json`, and the file extension stops implying a JSX capability that isn't used. Not done yet
+because it also touches:
+
+- `package.json` `build` script (hardcodes `render.tsx`)
+- `watch.ts` (filters on `filename.endsWith(".tsx")` — switching to `.ts` also makes it finally
+  rebuild on `route-types.ts` / `hono-web-api-shared-consts.ts` edits, which it ignores today)
+- `tsconfig.json` (drop the now-dead `jsx` options)
+- 9 file renames + the git-history churn
 
 ### Live reload for the browser
 During development the browser should automatically refresh when one of the tsx files is changed.
